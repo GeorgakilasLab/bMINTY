@@ -2,8 +2,12 @@
 
 bMINTY is a locally deployed web application, offering structured management of data produced by the analysis of high-throughput sequencing experiments.
 
-**GitHub Patges:**
-You can learn more about bMinty in our [GitHub Page][https://georgakilaslab.github.io/bMINTY].
+---
+
+## GitHub Pages
+You can learn more about bMinty in our [GitHub Page](https://georgakilaslab.github.io/bMINTY).
+
+---
 
 **Repo layout:**
 - Backend (Django API): [`bmintyApi`](bmintyApi)
