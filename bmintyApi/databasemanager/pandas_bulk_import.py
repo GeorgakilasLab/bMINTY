@@ -600,9 +600,7 @@ def bulk_import_with_pandas(
             
             cells_csv = f"/tmp/cells_{int(time.time())}.csv"
             try:
-                # CRITICAL: Column order MUST match table schema (see PRAGMA table_info)
-                # Table order: id, name, x_coordinate, y_coordinate, z_coordinate, assay_id, type, label
-                df_cells = df_cells[['id','name','x_coordinate','y_coordinate','z_coordinate','assay_id','type','label']]
+                df_cells = df_cells[['id','name','type','label','x_coordinate','y_coordinate','z_coordinate','assay_id']]
             except Exception:
                 pass
             try:
