@@ -1,0 +1,7 @@
+{
+    "bminty_signal_file": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/bminty_format_files/pbmcs/signal.csv",
+    "bminty_interval_file": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/bminty_format_files/pbmcs/interval.csv",
+    "bminty_cell_file": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/bminty_format_files/pbmcs/cell.csv",
+    "gene_ident": "ensgid",
+    "output_dir": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/Results"
+}

@@ -1,0 +1,7 @@
+{
+    "bminty_signal_file": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/bminty_format_files/SRT_bMINTY/Lung5-1/signal_sparse.csv",
+    "bminty_interval_file": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/bminty_format_files/SRT_bMINTY/Lung5-1/interval.csv",
+    "bminty_cell_file": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/bminty_format_files/SRT_bMINTY/Lung5-1/cell.csv",
+    "gene_ident": "name",
+    "output_dir": "/home/chsinnis/My_stuff/My_Python_Projects/Bioinformatics/bMINTY/Results"
+}

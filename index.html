@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bMINTY Documentation</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    /* --- CSS RESET & VARIABLES --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --primary: #059669;
+        --primary-dark: #047857;
+        --secondary: #334155;
+        --background: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --text: #1e293b;
+        --text-light: #64748b;
+        --code-bg: #1e293b;
+        --code-text: #f1f5f9;
+        --sidebar-width: 280px;
+        --header-height: 70px;
+        --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background: var(--background);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* --- HEADER --- */
+    .header {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--header-height);
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 2rem;
+        z-index: 50;
+    }
+
+    .logo {
+        height: 45px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .logo img {
+        height: 100%;
+        width: auto;
+    }
+
+    .logo-text {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--primary);
+    }
+
+    /* --- LAYOUT --- */
+    .layout {
+        display: flex;
+        padding-top: var(--header-height);
+        min-height: 100vh;
+    }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+        width: var(--sidebar-width);
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        top: var(--header-height);
+        bottom: 0;
+        left: 0;
+        padding: 2rem 0;
+        overflow-y: auto;
+    }
+
+    .nav-header {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-light);
+        padding: 0 1.5rem;
+        margin: 1.5rem 0 0.5rem;
+        letter-spacing: 0.05em;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.6rem 1.5rem;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.9rem;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .nav-link:hover { background: var(--background); color: var(--primary); }
+    .nav-link.active {
+        background: #ecfdf5;
+        color: var(--primary-dark);
+        border-left-color: var(--primary);
+        font-weight: 500;
+    }
+
+    /* --- CONTENT --- */
+    .main-content {
+        margin-left: var(--sidebar-width);
+        flex: 1;
+        padding: 3rem 4rem;
+        max-width: 100%;
+    }
+
+    .content-wrapper { max-width: 1000px; margin: 0 auto; }
+
+    h1 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--text); line-height: 1.2; }
+    h2 { font-size: 1.75rem; margin: 3rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); color: var(--primary-dark); }
+    h3 { font-size: 1.25rem; margin: 2rem 0 1rem; color: var(--secondary); font-weight: 600; }
+    p { margin-bottom: 1.2rem; color: var(--text-light); }
+    
+    /* CODE BLOCKS */
+    pre {
+        background: var(--code-bg);
+        color: var(--code-text);
+        padding: 1.2rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+
+    code {
+        background: #e2e8f0;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: var(--primary-dark);
+    }
+    
+    pre code {
+        background: transparent;
+        color: inherit;
+        padding: 0;
+    }
+
+    /* IMAGES & SCREENSHOTS */
+    .img-container {
+        margin: 2rem 0;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        background: white;
+        transition: transform 0.2s;
+        cursor: zoom-in;
+    }
+
+    .img-container:hover { transform: translateY(-2px); }
+
+    .img-container img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .img-caption {
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-top: 1px solid var(--border);
+        font-size: 0.85rem;
+        color: var(--text-light);
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    /* WIZARD GALLERY */
+    .wizard-gallery {
+        display: flex;
+        overflow-x: auto;
+        gap: 1.5rem;
+        padding: 1rem 0 2rem;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .wizard-step {
+        flex: 0 0 70%; /* Show 70% of image to encourage scroll */
+        scroll-snap-align: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        cursor: zoom-in;
+        transition: transform 0.2s;
+    }
+    .wizard-step:hover { transform: translateY(-5px); }
+    
+    /* UTILS */
+    .card { background: var(--surface); border: 1px solid var(--border); padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
+    .badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; vertical-align: middle; }
+    ul { margin-left: 2rem; margin-bottom: 1.5rem; color: var(--text-light); }
+    li { margin-bottom: 0.5rem; }
+   
+
+    /* SCHEMA TABLES STYLING */
+    .schema-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        background: white;
+        box-shadow: var(--shadow);
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 0.9rem;
+    }
+
+    .schema-table thead {
+        background: var(--secondary);
+        color: white;
+    }
+
+    .schema-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary);
+    }
+
+    .schema-table td {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+    }
+
+    .schema-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .schema-table tr:hover {
+        background-color: #f1f5f9;
+    }
+
+    .pk-badge {
+        background-color: #be123c;
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 6px;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    .fk-badge {
+        background-color: #1d4ed8;
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 6px;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    .mono {
+        font-family: 'Courier New', monospace;
+        color: var(--primary-dark);
+    }
+    
+
+    /* LIGHTBOX */
+    .lightbox {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9);
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    .lightbox img { max-width: 95%; max-height: 95%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    .lightbox.active { display: flex; animation: fadeIn 0.2s; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; animation: fadeIn 0.4s; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">
+        <img src="screenshot/bminty_logo.png" alt="bMINTY Logo">
+        <div class="logo-text">Documentation</div>
+    </div>
+</div>
+
+<div class="layout">
+    <nav class="sidebar">
+        <div class="nav-header">Getting Started</div>
+        <a class="nav-link active" data-section="overview" href="#" onclick="showSection('overview')">Overview</a>
+        <a class="nav-link" data-section="setup" href="#" onclick="showSection('setup')">Setup & Maintenance</a>
+        
+        <div class="nav-header">User Interface</div>
+        <a class="nav-link" data-section="explore" href="#" onclick="showSection('explore')">Explore Dashboard</a>
+        <a class="nav-link" data-section="filters" href="#" onclick="showSection('filters')">Filter Panel</a>
+        <a class="nav-link" data-section="import" href="#" onclick="showSection('import')">Import Wizard</a>
+        <a class="nav-link" data-section="export" href="#" onclick="showSection('export')">Exports & Data</a>
+        
+        <div class="nav-header">Database Schema</div>
+        <a class="nav-link subsection" data-section="schema-study" href="#" onclick="showSection('schema-study')">Study Table</a>
+        <a class="nav-link subsection" data-section="schema-pipeline" href="#" onclick="showSection('schema-pipeline')">Pipeline Table</a>
+        <a class="nav-link subsection" data-section="schema-assay" href="#" onclick="showSection('schema-assay')">Assay Table</a>
+        <a class="nav-link subsection" data-section="schema-assembly" href="#" onclick="showSection('schema-assembly')">Assembly Table</a>
+        <a class="nav-link subsection" data-section="schema-interval" href="#" onclick="showSection('schema-interval')">Interval Table</a>
+        <a class="nav-link subsection" data-section="schema-cell" href="#" onclick="showSection('schema-cell')">Cell Table</a>
+        <a class="nav-link subsection" data-section="schema-signal" href="#" onclick="showSection('schema-signal')">Signal Table</a>
+
+        <div class="nav-header">Developers</div>
+        <a class="nav-link" data-section="api" href="#" onclick="showSection('api')">API & Swagger</a>
+    </nav>
+
+    <main class="main-content">
+        <div class="content-wrapper">
+
+            <section class="section active" id="overview">
+                <h1>Welcome to bMINTY</h1>
+                
+                <div class="img-container" onclick="openLightbox(this)">
+                    <img src="screenshot/explore_page.png" alt="Main Explore Dashboard">
+                    <div class="img-caption">The Main Dashboard View</div>
+                </div>
+
+                <div class="card">
+                    <h3>At a Glance</h3>
+                    <p>bMINTY is a <strong>locally deployed</strong> web application, offering structured management of data produced by the analysis of high-throughput sequencing experiments.</p>
+                </div>
+
+                <div class="img-container" onclick="openLightbox(this)">
+                    <img src="screenshot/bminty_architecture.png" alt="bMinty's architecture overview">
+                    <div class="img-caption">Overview of bMinty's architecture</div>
+                </div>
+            </section>
+
+            <section class="section" id="setup">
+                <h1>Setup & Maintenance</h1>
+                <p>Comprehensive guide to installing, configuring, and updating bMINTY using Docker.</p>
+
+                <h2>1. Initial Installation</h2>
+                <p>The simplest way to run bMINTY is with Docker. No external dependencies (Python/Node) are required.</p>
+                <pre><code># Clone the repository
+git clone https://github.com/GeorgakilasLab/bMINTY
+cd bMinty
+
+# Start services (First time build)
+docker compose up --build</code></pre>
+
+                <h2>2. Changing Ports</h2>
+                <p>By default, the Frontend runs on <code>3000</code> and the Backend on <code>8000</code>. To change this, you can use a <code>.env</code> file.</p>
+                <pre><code># Create .env file
+cp .env.example .env
+
+# Edit .env to set your preferred ports
+FRONTEND_PORT=3001
+BACKEND_PORT=8001
+
+# Re-launch with new configuration
+docker compose up --build</code></pre>
+
+
+                <h2>3. Accessing the Web Interface</h2>
+                <p>
+                Once the Docker containers are running successfully, the bMINTY web interface can be accessed directly from your browser.
+                </p>
+
+                <ul>
+                    <li>
+                        <strong>Default URL:</strong>
+                        <code>http://localhost:3000</code>
+                    </li>
+                    <li>
+                        <strong>Backend API (default):</strong>
+                        <code>http://localhost:8000</code>
+                    </li>
+                </ul>
+
+                <p>
+                If you changed the ports using the <code>.env</code> file, make sure to use the corresponding values instead.
+                </p>
+
+                <div class="card">
+                    <h3>Example</h3>
+                    <p>
+                        If your <code>.env</code> contains:
+                    </p>
+                    <pre><code>FRONTEND_PORT=3001&#10;BACKEND_PORT=8001</code></pre>
+                    <p>
+                        Then open:
+                    </p>
+                    <ul>
+                        <li><strong>Frontend:</strong> <code>http://localhost:3001</code></li>
+                        <li><strong>Backend API:</strong> <code>http://localhost:8001</code></li>
+                    </ul>
+                </div>
+
+
+                <h2>4. Updating bMINTY</h2>
+                <p>To update your instance with the latest features from GitHub:</p>
+                <pre><code># 1. Stop current containers
+docker compose down
+
+# 2. Pull latest code
+git pull origin main
+
+# 3. Rebuild containers to apply changes
+docker compose up --build</code></pre>
+
+                <div class="card">
+                    <h3>Repo Layout</h3>
+                    <ul>
+                        <li><strong>Backend:</strong> <code>bmintyApi/</code> (Django API)</li>
+                        <li><strong>Frontend:</strong> <code>bmintyReact/</code> (React UI)</li>
+                        <li><strong>Orchestration:</strong> <code>docker-compose.yml</code></li>
+                    </ul>
+                </div>
+            </section>
+
+                 <section class="section" id="explore">
+                <h1>Explore Functionality</h1>
+
+                <div class="card">
+                    <p>The Explore page lets you navigate your data hierarchy with ease:</p>
+                    <ul>
+                        <li><strong>Study → Assay → Data:</strong> Drill down to see all linked experiments and metadata.</li>
+                    </ul>
+                    <p>To access the Explore page, open your browser and navigate to:</p>
+                    <pre><code>http://localhost:3000</code></pre>
+                </div>
+                <h3>Expanding Data Levels</h3>
+                <p>Clicking on a Study row reveals associated Assays. Clicking an Assay reveals detailed metrics including pipeline info and assembly versions.</p>
+                
+                <div class="grid-2">
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/explore_page_expanding_study.png" alt="Expanding a Study">
+                        <div class="img-caption">1. Expanding a Study</div>
+                    </div>
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/explore_page_expanding_study_assay.png" alt="Expanding an Assay">
+                        <div class="img-caption">2. Viewing Assay Details</div>
+                    </div>
+                </div>
+
+                <h3>Modifying Metadata</h3>
+                <p>You can edit study or assay details directly from the interface using the modify actions.</p>
+                
+                <div class="grid-3">
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/explore_page_modifying_study.png" alt="Modifying Study">
+                        <div class="img-caption">Editing Study Metadata</div>
+                    </div>
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/explore_page_modifying_assay.png" alt="Modifying Assay">
+                        <div class="img-caption">Editing Assay Metadata</div>
+                    </div>
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/explore_page_modifying_assay_reassign.png" alt="Reassigning Assay">
+                        <div class="img-caption">While editing an assay, you can assign it to a different study.</div>
+                    </div>
+                </div>
+                
+            </section>
+
+            <section class="section" id="filters">
+                <h1>Filtering Panel</h1>
+                <p>The sidebar filter panel allows you to drill down into massive datasets using metadata tags. The filters are auto-filled from the database.</p>
+
+                <div class="img-container" onclick="openLightbox(this)"  style="width:30%;height:auto;">
+                    <img src="screenshot/filter_panel/filters.png" alt="Full Filter Panel">
+                    <div class="img-caption">The Global Filter Sidebar</div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/filter_panel/apply_filter.png" alt="Apply Filter">
+                        <div class="img-caption">Applying Selection. To undo a selection, you can click the <strong>x button</strong>, both on the filter panel and the main view.</div>
+                    </div>
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/filter_panel/reset_filters.png" alt="Reset Filter">
+                        <div class="img-caption">Click Reset Filters to reset all filters to their default values</div>
+                    </div>
+                </div>
+
+                <h2>Detailed Filter Categories</h2>
+                
+                <div class="card">
+                    <h3>1. Study Filters</h3>
+                    <img src="screenshot/filter_panel/study.png" style="width:100%; margin-bottom:1rem; border:1px solid #eee;">
+                      <ul>
+                        <li><strong>Study Name:</strong> A short, human-friendly unique identifier for the study.</li>
+                        <li><strong>Study External ID:</strong> A unique study identifier used to map the study to external repositories (e.g. GEO accession).</li>
+                        <li><strong>Repository:</strong> The external repository that originally hosts the study data (e.g. GEO, ArrayExpress).</li>
+                        <li><strong>Description:</strong> A detailed description of the purpose and context of the study.</li>
+                        <li><strong>Note:</strong> Any note related to the study.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>2. Assay Filters</h3>
+
+                    <img src="screenshot/filter_panel/assay.png"
+                         style="width:80%; margin-bottom:1rem; border:1px solid #eee;">
+
+                    <ul>
+                        <li><strong>Assay Name:</strong> A short, human-friendly unique identifier for the assay.</li>
+                        <li><strong>Assay External ID:</strong> The external id of the assay.</li>
+                        <li><strong>Assay Type:</strong> The type of assay that was performed.</li>
+                        <li><strong>Tissue:</strong> The tissue origin of the sample used for the assay.</li>
+                        <li><strong>Cell Type:</strong> The cell type isolated from the sample (if applicable).</li>
+                        <li><strong>Treatment:</strong> A brief description of any treatment applied prior to sampling.</li>
+                        <li><strong>Platform:</strong> The platform or technology used to perform the assay.</li>
+                        <li><strong>Note:</strong> Any note related to the assay.</li>
+                        <li><strong>Target:</strong> The molecular target of the assay (e.g. DNA, RNA), if applicable.</li>
+                        <li><strong>Date:</strong> The date on which the assay was performed.</li>
+                        <li><strong>Kit:</strong> The kit used to prepare the sample for the assay.</li>
+                        <li><strong>Description:</strong> A detailed description of the purpose of the assay.</li>
+                        <li><strong>Availability:</strong> Indicates whether the assay is visible in the user interface.</li>
+                    </ul>
+                </div>
+
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>3. Cell Filters</h3>
+                        <img src="screenshot/filter_panel/cell.png" style="width:100%; margin-bottom:1rem; border:1px solid #eee;">
+                        <p>Filter by <strong>Cell type</strong> and <strong>Cell label</strong>.</p>
+                    </div>
+                    <div class="card">
+                        <h3>4. Assembly Filters</h3>
+                        <img src="screenshot/filter_panel/assembly.png" style="width:100%; margin-bottom:1rem; border:1px solid #eee;">
+                        <p>Filter by <strong>Assembly Name</strong> (GRCh38, mm10) or <strong>Version</strong>.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>5. Interval Filters</h3>
+                    <img src="screenshot/filter_panel/interval.png" style="width:100%; margin-bottom:1rem; border:1px solid #eee;">
+                    <p>Filter by genomic interval <strong>Types</strong> (e.g., Peaks, Genes) or <strong>Biotypes</strong>.</p>
+                </div>
+            </section>
+
+            <section class="section" id="import">
+                <h1>Data Import Wizard</h1>
+                <p>The wizard guides you through ingesting complex genomic datasets safely. You can either import an entire database or individual tables.</p>
+                
+                <div class="img-container" onclick="openLightbox(this)">
+                    <img src="screenshot/footer.png" alt="footer">
+                    <div class="img-caption">To access the wizard, select a button at the footer of the explore page.</div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/import_data_general_import_individual_or_entired_database.png" alt="Import Menu">
+                        <div class="img-caption">Import Menu Selection</div>
+                    </div>
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/import_entire_database_window.png" alt="Full DB Import">
+                        <div class="img-caption">Import Entire SQLite Database. Select the create a backup option to safely backup your existing work.</div>
+                    </div>
+                </div>
+
+                <h3>Step-by-Step Wizard to import individual data.</h3>
+                <p><em>Scroll horizontally to view all steps:</em></p>
+                
+                <div class="wizard-gallery">
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_1_study.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 1: <strong>Create</strong> or <strong>Select</strong> an existing  Study</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_2_pipeline.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 2: <strong>Create</strong> or <strong>Select</strong> an existing  Pipeline</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_3_assay.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 3: <strong>Create</strong> or <strong>Select</strong> an existing  Assay</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_4_assembly.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 4: <strong>Create</strong> or <strong>Select</strong> an existing  Assembly</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_5_add_intervals.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 5: Add Intervals</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_6_add_cell.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 6: Add Cells</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/individual/wizard_7_add_signals.png" style="width:100%; display:block;">
+                        <div class="img-caption">Step 7: Upload Signals</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="export">
+                <h1>Exporting Data</h1>
+                <p>Export your curated data for downstream analysis or publication. You can export the full database or a filtered subset.</p>
+
+            <div class="wizard-gallery">
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/export_selected_data.png" style="width:100%; display:block;">
+                        <div class="img-caption">Export Configuration Dialog, without filters applied</div>
+                    </div>
+                    <div class="wizard-step" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/export_selected_data_with_filters.png" style="width:100%; display:block;">
+                        <div class="img-caption">Export Configuration Dialog with Filters Applied</div>
+                    </div>
+            </div>
+
+            <div class="card">
+                <h3>Supported Formats</h3>
+                    <ul>
+                        <li><strong>RO-Crate:</strong> FAIR-compliant research object packaging, ideal for publication supplementary material.</li>
+                        <li><strong>CSV:</strong> Raw data tables for R/Python analysis.</li>
+                        <li><strong>SQLite:</strong> Full portable database snapshot.</li>
+                    </ul>
+                </div>
+            </section>
+
+             <section class="section" id="schema-study">
+                <h1>Study Table</h1>
+                <p>This table acts as the root of the data hierarchy, representing a coherent biological study.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">external_id</td>
+                            <td>Unique study ID used to find the study in an external repository</td>
+                            <td>GSE100738</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">external_repo</td>
+                            <td>Name of the external repository that the external_id corresponds to</td>
+                            <td>GEO</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">name</td>
+                            <td>A short name that describes the study</td>
+                            <td>ImmGen ATAC-seq data</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">description</td>
+                            <td>A lengthy description of the study</td>
+                            <td>Immunological Genome Project chromatin accessibility maps...</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">availability</td>
+                            <td>Boolean flag that toggles visibility in the UI</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">note</td>
+                            <td>Additional information or remarks</td>
+                            <td>Study imported from Alpha laboratory</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="section" id="schema-pipeline">
+                <h1>Pipeline Table</h1>
+                <p>Stores metadata about the bioinformatic pipelines used to generate the data.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">name</td>
+                            <td>A short name that describes the pipeline</td>
+                            <td>aPEACH ATAC unreplicated</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">description</td>
+                            <td>A lengthy description of the pipeline</td>
+                            <td>Automated Pipeline for End-to-End Analysis...</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">external_url</td>
+                            <td>URL of an external repository for the pipeline</td>
+                            <td>https://doi.org/10.3390/biology13070492</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="section" id="schema-assay">
+                <h1>Assay Table</h1>
+                <p>Represents individual experiments performed within a study.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">study_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Study table</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">pipeline_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Pipeline table</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">external_id</td>
+                            <td>Unique assay ID for external repositories</td>
+                            <td>GSM2692171</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">type</td>
+                            <td>Type of the assay</td>
+                            <td>ATAC-seq</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">target</td>
+                            <td>Target molecule of the assay (protocol-dependent)</td>
+                            <td>genomic DNA</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">name</td>
+                            <td>Short name that uniquely describes the assay</td>
+                            <td>replicate 1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">tissue</td>
+                            <td>Tissue origin of the sample</td>
+                            <td>Thymus</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">cell_type</td>
+                            <td>Cell type isolated from the sample</td>
+                            <td>Double Negative Thymocytes</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">treatment</td>
+                            <td>Description of treatment applied</td>
+                            <td>not applicable</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">date</td>
+                            <td>Date the assay was performed</td>
+                            <td>03/07/2017</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">platform</td>
+                            <td>Sequencing platform used</td>
+                            <td>Illumina NextSeq 500</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">kit</td>
+                            <td>Preparation kit used</td>
+                            <td>Nextera DNA Library Preparation Kit</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">description</td>
+                            <td>Lengthy description or URL</td>
+                            <td>https://www.ncbi.nlm.nih.gov/...</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">availability</td>
+                            <td>Boolean flag that toggles visibility in the UI</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">interval_count</td>
+                            <td>Total genomic intervals associated with the assay</td>
+                            <td>332,792</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">non_zero_cells</td>
+                            <td>Total cells with non-zero signal (single-cell only)</td>
+                            <td>127,442,010</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">zero_cells</td>
+                            <td>Total cells with zero signal (single-cell only)</td>
+                            <td>855,419,590</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">note</td>
+                            <td>Additional remarks</td>
+                            <td>To be included in downstream analysis</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="section" id="schema-assembly">
+                <h1>Assembly Table</h1>
+                <p>Stores reference genome assembly information.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">name</td>
+                            <td>Name of the external repository hosting the assembly</td>
+                            <td>NCBI Genome assembly GRCm39</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">version</td>
+                            <td>Commonly used name of the assembly version</td>
+                            <td>GRCm39</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">species</td>
+                            <td>3-letter nomenclature of the species</td>
+                            <td>Mus musculus (mmu)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="section" id="schema-interval">
+                <h1>Interval Table</h1>
+                <p>Defines genomic regions (peaks, genes, regulatory elements) of interest.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">assembly_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Assembly table</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">external_id</td>
+                            <td>Unique genomic interval ID set by user</td>
+                            <td>32413</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">parental_id</td>
+                            <td>External ID of a parental interval (hierarchical support)</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">name</td>
+                            <td>Name assigned by repository or user</td>
+                            <td>preT.DN1_peak_1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">type</td>
+                            <td>Type of interval (e.g., ATAC_peaks, Genes)</td>
+                            <td>ATAC_peaks</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">biotype</td>
+                            <td>Biotype (e.g., protein_coding)</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">chromosome</td>
+                            <td>Chromosome identifier</td>
+                            <td>GL456210.1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">start</td>
+                            <td>Chromosomal start coordinate</td>
+                            <td>159375</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">end</td>
+                            <td>Chromosomal end coordinate</td>
+                            <td>159581</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">strand</td>
+                            <td>DNA strand (+ or -)</td>
+                            <td>+</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">summit</td>
+                            <td>Coordinate of interval summit (peak-like intervals)</td>
+                            <td>23</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="section" id="schema-cell">
+                <h1>Cell Table</h1>
+                <p>Stores single-cell or spatial resolution data points.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">assay_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Assay table</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">name</td>
+                            <td>Name/Barcode of the cell</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">type</td>
+                            <td>Resolution type reflecting capture technology</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">label</td>
+                            <td>Cell-type label classification</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">x_coordinate</td>
+                            <td>Spatial X coordinate</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">y_coordinate</td>
+                            <td>Spatial Y coordinate</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">z_coordinate</td>
+                            <td>Spatial Z coordinate</td>
+                            <td>null</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="section" id="schema-signal">
+                <h1>Signal Table</h1>
+                <p>The core experimental data linking assays, intervals, and cells.</p>
+                <table class="schema-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%">Column Name</th>
+                            <th style="width: 50%">Description</th>
+                            <th style="width: 25%">Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">id<span class="pk-badge">PK</span></td>
+                            <td>Primary Key</td>
+                            <td>507</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">assay_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Assay table</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">interval_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Interval table</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">cell_id<span class="fk-badge">FK</span></td>
+                            <td>Foreign key linking to the Cell table</td>
+                            <td>null</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">signal</td>
+                            <td>Experimental signal (raw or normalized counts)</td>
+                            <td>357.195</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">p_value</td>
+                            <td>Statistical significance</td>
+                            <td>421.397</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">padj_value</td>
+                            <td>Adjusted statistical significance</td>
+                            <td>197.117</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            
+             <section class="section" id="api">
+                <h1>Backend API</h1>
+                <p>bMINTY exposes a full REST API. A Swagger UI is available at <code>http://localhost:8000/api/schema/swagger-ui/</code> for interactive documentation.</p>
+
+                <div class="img-container" onclick="openLightbox(this)">
+                    <img src="screenshot/swagger.png" alt="Swagger UI">
+                    <div class="img-caption">Swagger Documentation Interface</div>
+                </div>
+               
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Full Screen View">
+</div>
+
+<script>
+    // Navigation Logic
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        
+        // Show target section
+        const target = document.getElementById(sectionId);
+        if(target) target.classList.add('active');
+        
+        // Update Sidebar highlighting
+        document.querySelectorAll('.nav-link').forEach(l => {
+            l.classList.remove('active');
+            if (l.dataset.section === sectionId) l.classList.add('active');
+        });
+
+        // Scroll top
+        window.scrollTo(0,0);
+    }
+
+
+    // Lightbox Logic
+    function openLightbox(element) {
+        const img = element.querySelector('img');
+        if(img) {
+            document.getElementById('lightbox-img').src = img.src;
+            document.getElementById('lightbox').classList.add('active');
+        }
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+    }
+
+    // Initialize based on URL hash or default to overview
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash.replace('#','') || 'overview';
+        if(document.getElementById(hash)) {
+            showSection(hash);
+        } else {
+            showSection('overview');
+        }
+    });
+</script>
+</body>
+</html>

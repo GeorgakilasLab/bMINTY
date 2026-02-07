@@ -1,0 +1,141 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Switch from 'react-switch';
+import AssayPage from './AssayPage';
+import MyTable from "./components/StudiesTable";
+
+const API_BASE = 'http://127.0.0.1:8000/api';
+
+const App = () => {
+    const [studies, setStudies] = useState([]);
+    const [assays, setAssays] = useState([]);  // Add state for assays
+    const [studyForm, setStudyForm] = useState({ name: '', description: '', external_id: '', availability: true });
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentStudyId, setCurrentStudyId] = useState(null);
+    const [initialStudyData, setInitialStudyData] = useState(null);
+    const navigate = useNavigate(); // For navigation
+
+    useEffect(() => {
+        fetchStudies();
+        fetchAssays(); // Fetch assays on mount
+    }, []);
+
+    const fetchStudies = async () => {
+        try {
+            const response = await axios.get(`${API_BASE}/studies/`);
+            setStudies(response.data);
+        } catch (error) {
+            console.error('Error fetching studies:', error);
+        }
+    };
+
+    const fetchAssays = async () => {
+        try {
+            const response = await axios.get(`${API_BASE}/assays/`);
+            setAssays(response.data); // Set the assays data in state
+        } catch (error) {
+            console.error('Error fetching assays:', error);
+        }
+    };
+
+    const handleFormSubmit = async () => {
+        if (isEditing) {
+            try {
+                await axios.put(`${API_BASE}/studies/${currentStudyId}/`, studyForm);
+                setIsEditing(false);
+                setStudyForm({ name: '', description: '', external_id: '', availability: true });
+                setInitialStudyData(null);
+                fetchStudies();
+            } catch (error) {
+                console.error('Error updating study:', error.response ? error.response.data : error.message);
+            }
+        } else {
+            try {
+                await axios.post(`${API_BASE}/studies/`, studyForm);
+                setStudyForm({ name: '', description: '', external_id: '', availability: true });
+                fetchStudies();
+            } catch (error) {
+                console.error('Error adding study:', error.response ? error.response.data : error.message);
+            }
+        }
+    };
+
+    const handleEditStudy = (study) => {
+        setStudyForm({
+            name: study.name,
+            description: study.description,
+            external_id: study.external_id,
+            availability: study.availability
+        });
+        setInitialStudyData(study);
+        setIsEditing(true);
+        setCurrentStudyId(study.study_id);
+    };
+
+    const toggleStatus = async (id, currentStatus) => {
+        try {
+            await axios.patch(`${API_BASE}/studies/${id}/status/`, { availability: !currentStatus });
+            fetchStudies();
+        } catch (error) {
+            console.error('Error changing status:', error);
+        }
+    };
+
+    const handleChange = (e) => {
+        setStudyForm({ ...studyForm, [e.target.name]: e.target.value });
+    };
+
+    const handleStatusChange = (checked) => {
+        setStudyForm({ ...studyForm, availability: checked });
+    };
+
+    const hasFormChanged = () => {
+        return (
+            studyForm.name !== initialStudyData?.name ||
+            studyForm.description !== initialStudyData?.description ||
+            studyForm.availability !== initialStudyData?.availability
+        );
+    };
+
+    const handleClearForm = () => {
+        setStudyForm({ name: '', description: '', external_id: '', availability: true });
+        setIsEditing(false);
+        setInitialStudyData(null);
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <Routes>
+                <Route path="/" element={
+                    <>
+                        <h1 className="text-2xl font-bold mb-4">Studies</h1>
+
+                        <div className="mb-4">
+                            <input type="text" placeholder="External ID" name="external_id" value={studyForm.external_id} onChange={handleChange} className="border p-2 mr-2 w-56" disabled={isEditing} />
+                            <input type="text" placeholder="Name" name="name" value={studyForm.name} onChange={handleChange} className="border p-2 mr-2 w-56" />
+                            <input type="text" placeholder="Description" name="description" value={studyForm.description} onChange={handleChange} className="border p-2 mr-2 w-56" />
+                            <label className="mr-2">Available</label>
+                            <Switch checked={studyForm.availability} onChange={handleStatusChange} className="mr-2" />
+                            <button onClick={handleFormSubmit} className={`bg-blue-500 text-white px-4 py-2 rounded ${!hasFormChanged() ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!hasFormChanged()}>{isEditing ? 'Save Changes' : 'Add Study'}</button>
+                            <button onClick={handleClearForm} className="bg-gray-500 text-white px-4 py-2 rounded ml-2">Clear</button>
+                        </div>
+
+                        <h1 className="text-2xl font-bold mb-4">Table of Studies</h1>
+                        <MyTable
+                            studies={studies}
+                            assays={assays} // Pass assays to the MyTable component
+                            navigate={navigate}
+                            handleEditStudy={handleEditStudy}
+                            toggleStatus={toggleStatus}
+                        />
+
+                    </>
+                } />
+                <Route path="/assays/:studyId" element={<AssayPage />} />
+            </Routes>
+        </div>
+    );
+};
+
+export default App;

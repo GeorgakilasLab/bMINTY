@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./bmintyApi
+    ports:
+      - "${BACKEND_PORT:-8000}:${BACKEND_PORT:-8000}"
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT:-8000}
+      - FRONTEND_PORT=${FRONTEND_PORT:-3000}
+    volumes:
+      - ./bmintyApi:/bmintyApi
+      - ./data:/data  # Mount local data folder instead of copying
+  frontend:
+    build:
+      context: ./bmintyReact
+      args:
+        # Frontend runs in the user's browser; automatically use host-accessible backend port
+        REACT_APP_API_BASE: ${REACT_APP_API_BASE:-http://localhost:${BACKEND_PORT:-8000}/api}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./bmintyReact:/app
+      - /app/node_modules        # <-- prevents overwrite
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_BASE=${REACT_APP_API_BASE:-http://localhost:${BACKEND_PORT:-8000}/api}
+

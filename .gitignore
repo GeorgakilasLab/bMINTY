@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+bmintyReact/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Build output
+build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database files (local development - never commit)
+bmintyApi/db.sqlite3
+bmintyApi/db.sqlite3-journal
+bmintyApi/db.sqlite3.backup
+bmintyApi/db.sqlite3.bak
+*.sqlite3
+*.sqlite3-journal
+
+# SSH keys folder
+ssh_keys/
+
+# Data folder (local files)
+data/
+
+# Test folders
+tests/
+test-data/
+test-results/
+
+# React build
+bmintyReact/build/
+bmintyReact/dist/
+bmintyApi/db.sqlite3-shm
+bmintyApi/db.sqlite3-wal
