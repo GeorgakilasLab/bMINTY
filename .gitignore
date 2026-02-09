@@ -64,3 +64,6 @@ bmintyReact/build/
 bmintyReact/dist/
 bmintyApi/db.sqlite3-shm
 bmintyApi/db.sqlite3-wal
+
+# Zone identifiers
+*.Zone.Identifier
