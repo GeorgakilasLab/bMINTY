@@ -47,7 +47,7 @@ The script requires the json `config_file` file that acts as a configuration fil
   "metadata":
   {
     "metadata_file": "/path/metadata.csv",
-    "biotype_file": "/path/.gtf",
+    "gene_annotation_file": "/path/.gtf",
     "gene_mapping_file": "/path/gene_mapping.csv" 
   },
   "output_directory": "/path/results",
@@ -64,10 +64,10 @@ The `config_file` json file consists of four main entries.
 
 2. **metadata** dictionary (**optional**). The dictionary entries are:
   
-    -**metadata_file**: Path to the metadata file. If provided, the metadata file contains cell-level annotations through a csv file with columns `cell_label` and `cell_type`. In the first column there should be the label of each cell, while in the second column the type annotation.
+    -**metadata_file**: Path to the metadata file. If provided, the metadata file contains cell-level annotations through a csv file with columns `cell_label` and `cell_type`. In the first column there should be the label of each cell, while in the second column the type annotation. The column containing type annotations must be named exactly cell_type.
     
-    -**biotype_file**: An [Ensembl gtf file](https://www.ensembl.org/info/website/upload/gff.html) that contains information about the type of each gene. 
-    
+    -**gene_annotation_file**: An [Ensembl gtf file](https://www.ensembl.org/info/website/upload/gff.html) or [GENCODE gtf file](https://www.gencodegenes.org/pages/data_format.html) that contains information about the type of each gene. 
+
     -**gene_mapping**: A gene mapping file can be provided with the exact mapping between ensembl ids and gene symbols. This must be a csv file with columns `ensembl_id` and `gene_symbol` that associate each Ensembl gene id to its respective gene symbol.
 
 3. **output_directory** (**mandatory**): The output directory in which the resulting scripts files are stored in. The resulting  *bMINTY* files are:
@@ -85,7 +85,7 @@ The `config_file` json file consists of four main entries.
 
 ### spatial_count_matrix_to_bMINTY.py
 
-The `spatial_count_matrix_to_bMINTY.py` converts the original spatial count matrix to the bMINTY format. The supported format for conversion are ***CosMx Nanostring - Bruker Spatial Biology*** format. The conversion script processes the count matrix and the cell cooridinates of a ***CosMx*** study and, when available, integrates cell annotations, gene annotations, and biotype information.
+The `spatial_count_matrix_to_bMINTY.py` converts the original spatial count matrix to the bMINTY format. The supported format for conversion are ***CosMx Nanostring - Bruker Spatial Biology*** [format](https://nanostring-public-share.s3.us-west-2.amazonaws.com/SMI-Compressed/SMI-ReadMe.html). The conversion script processes the count matrix and the cell cooridinates of a ***CosMx*** study and, when available, integrates cell annotations, gene annotations, and biotype information.
 
 The script usage is:
 
@@ -111,19 +111,19 @@ The format of the json should be the following:
 
 The `config_file` json file consists of seven entries.
 
-1. **count_matrix_file** (**mandatory**): Path to the count matrix file (gzip compressed csv file). The first two columns are essentially the indexes of the matrix, as they contain the field-of-view (fov) and the cell (or spot) label. The rest of the columns are the genes that have been identified during the sequencing process.
+1. **count_matrix_file** (**mandatory**): Path to the count matrix file (csv file). The first two columns are essentially the indexes of the matrix, as they contain the field-of-view (fov) and the cell label. The remaining columns represent genes targeted by the panel and negative control probes.
 
-    **IMPORTANT NOTE**: In the count matrix the two first columns must be labeled and ordered as:
+    **IMPORTANT NOTE**: In the count matrix the two first columns must be labeled as:
         
-        - The fov column: `fov` (1st column)
-        - The cell (or spot) column: `cell_ID` (2nd column)
+        - The fov column: `fov`
+        - The cell column: `cell_ID`
 
 
     The `cell_ID` and `fov` columns will be updated to cell_ID_fov column in the **bMINTY** *cells.csv* output file. `cell_ID`s that do not exist in the coordinates files will be ommited.
 
-2. **metadata_file** (**optional**): Path to the metadata file. If provided, the metadata file contains cell-level annotations through a csv file with index `cell_ID_fov` and a `cell_type` column. Thus, the identified cell (or spot) at a specific fov is annotated with the cell type of the corresponding entry in the `cell_type` column.
+2. **metadata_file** (**optional**): Path to the metadata file. If provided, the metadata file is a CSV containing cell-level annotations, with the first column holding cell IDs (`cell_ID_fov`) and a `cell_type` column. Thus, the identified cell at a specific fov is annotated with the cell type of the corresponding entry in the `cell_type` column. The column containing type annotations must be named exactly cell_type.
 
-3. **coordinates_file** (**mandatory**):This csv file contains x,y global cell/spot coordinates. This file must contain (among others) the following columns with these exact labels:
+3. **coordinates_file** (**mandatory**):This csv file contains x,y global cell coordinates. This file must contain (among others) the following columns with these exact labels:
     - fov
     - cell_ID
     - CenterY_global_px

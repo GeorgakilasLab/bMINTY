@@ -94,27 +94,12 @@ def main():
             "assembly_id": 1
         }) 
 
-    # gm = config.get("gene_mapping")
-    # if gm and gm.get("file") and Path(gm["file"]).exists():
-    #     gene_annotation=pd.read_csv(gm["file"])
-    #     if genes_in_matrix == "gene_symbol":
-    #         interval_df["external_id"]=interval_df["name"].map(gene_annotation.set_index('gene_symbol')['ensembl_id'])
-    #     else:
-    #         interval_df["name"]=interval_df["external_id"].map(gene_annotation.set_index('ensembl_id')['gene_symbol'])
-
     if config.get("gene_mapping_file") and Path(config["gene_mapping_file"]).exists():
         gene_annotation=pd.read_csv(config["gene_mapping_file"])
         if genes_in_matrix == "gene_symbol":
             interval_df["external_id"]=interval_df["name"].map(gene_annotation.set_index('gene_symbol')['ensembl_id'])
         else:
             interval_df["name"]=interval_df["external_id"].map(gene_annotation.set_index('ensembl_id')['gene_symbol'])
-
-    # ga = config.get("gene_annotation")
-    # gtf_file = None
-    # if ga and ga.get("file"):
-    #     type_file = os.path.splitext(ga["file"])[1].lower().lstrip(".")
-    #     if type_file == "gtf" and Path(ga["file"]).exists():
-    #         gtf_file = ga["file"]
 
     gtf_file = None
     if config.get("gene_annotation_file"):

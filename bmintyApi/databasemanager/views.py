@@ -362,7 +362,16 @@ def _generate_ro_crate_metadata(query_params, counts, file_list, export_format='
                 'description': 'Enabling Reproducible Management of High-Throughput Sequencing Analysis Results and their Metadata',
                 'url': 'https://github.com/GeorgakilasLab/bMINTY',
                 'codeRepository': 'https://github.com/GeorgakilasLab/bMINTY',
+                'license': {'@id': 'https://opensource.org/licenses/MIT'},
                 'citation': {'@id': '#bminty-paper'}
+            },
+            # Contextual Entity: ScholarlyArticle (citation)
+            {
+                '@id': '#bminty-paper',
+                '@type': 'ScholarlyArticle',
+                'name': 'bMINTY: Enabling Reproducible Management of High-Throughput Sequencing Analysis Results and their Metadata',
+                'author': {'@id': '#georgakilas-lab'},
+                'url': 'https://github.com/GeorgakilasLab/bMINTY'
             },
             # Contextual Entity: License (REQUIRED on Root Data Entity per RO-Crate 1.2)
             # Using CC0-1.0 (public domain dedication) for maximum openness
@@ -519,18 +528,24 @@ def _generate_ro_crate_metadata(query_params, counts, file_list, export_format='
                     
                     # Add foreign key information using isRelatedTo (flattened)
                     # Using descriptive IDs based on column names for better readability
+                    # Uses valueReference for machine-readable semantic links
                     if schema['foreign_keys']:
                         fk_refs = []
                         for fk_idx, fk in enumerate(schema['foreign_keys']):
                             # Use descriptive FK column name in ID
                             fk_col_sanitized = ''.join(c if c.isalnum() else '-' for c in fk['column'].lower()).strip('-')
                             fk_id = f'#table-{table_name}-fk-{fk_col_sanitized}'
+                            
+                            # Build target column ID for valueReference
+                            ref_col_sanitized = ''.join(c if c.isalnum() else '-' for c in fk['references_column'].lower()).strip('-')
+                            ref_col_id = f"#table-{fk['references_table']}-col-{ref_col_sanitized}"
+                            
                             fk_entity = {
                                 '@id': fk_id,
                                 '@type': 'PropertyValue',
                                 'name': fk['column'],
-                                'value': f"{fk['references_table']}.{fk['references_column']}",
-                                'description': f"Foreign key to {fk['references_table']} table"
+                                'description': f"Foreign key to {fk['references_table']} table",
+                                'valueReference': {'@id': ref_col_id}
                             }
                             ro_crate['@graph'].append(fk_entity)
                             fk_refs.append({'@id': fk_id})

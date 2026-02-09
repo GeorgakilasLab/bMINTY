@@ -29,7 +29,6 @@ def main():
 
     out_dir = config["output_directory"]
     os.makedirs(out_dir, exist_ok=True)
-    # assay_id = config.get("assay", {}).get("assay_id", 1)
     assay_id = config.get("assay_id",1)
 
     try:
@@ -87,16 +86,8 @@ def main():
             "assembly_id": 1
         }) 
 
-    meta_dict = config.get("metadata")
-    # gm = config.get("gene_mapping")
-    # if gm and gm.get("file") and Path(gm["file"]).exists():
-    #     gene_annotation=pd.read_csv(gm["file"])
-    #     if genes_in_matrix == "gene_symbol":
-    #         interval_df["external_id"]=interval_df["name"].map(gene_annotation.set_index('gene_symbol')['ensembl_id'])
-    #     else:
-    #         interval_df["name"]=interval_df["external_id"].map(gene_annotation.set_index('ensembl_id')['gene_symbol'])
+    meta_dict = config.get("metadata") or {}
 
-    
     if meta_dict.get("gene_mapping_file") and Path(meta_dict["gene_mapping_file"]).exists():
         gene_annotation=pd.read_csv(meta_dict["gene_mapping_file"])
         if genes_in_matrix == "gene_symbol":
@@ -104,19 +95,11 @@ def main():
         else:
             interval_df["name"]=interval_df["external_id"].map(gene_annotation.set_index('ensembl_id')['gene_symbol'])
 
-
-    # ga = config.get("biotypes")
-    # gtf_file = None
-    # if ga and ga.get("file"):
-    #     type_file = os.path.splitext(ga["file"])[1].lower().lstrip(".")
-    #     if type_file == "gtf" and Path(ga["file"]).exists():
-    #         gtf_file = ga["file"]
-
     gtf_file = None
-    if meta_dict.get("biotype_file"):
-        type_file = os.path.splitext(meta_dict["biotype_file"])[1].lower().lstrip(".")
-        if type_file == "gtf" and Path(meta_dict["biotype_file"]).exists():
-            gtf_file = meta_dict["biotype_file"]
+    if meta_dict.get("gene_annotation_file"):
+        type_file = os.path.splitext(meta_dict["gene_annotation_file"])[1].lower().lstrip(".")
+        if type_file == "gtf" and Path(meta_dict["gene_annotation_file"]).exists():
+            gtf_file = meta_dict["gene_annotation_file"]
 
     if gtf_file:
         records = []
