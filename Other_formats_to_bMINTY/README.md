@@ -131,7 +131,7 @@ The `config_file` json file consists of seven entries.
 
 4. **gene_mapping_file** (**optional**):A gene mapping file can be provided with the exact mapping between ensembl ids and gene symbols. This must be a csv file with columns ensembl_id and gene_symbol that associate each Ensembl gene id to its respective gene symbol.
 
-5. **gene_annotation** (**optional**): A GTF file can be provided to extract gene annotation and biotype information (e.g., biotype, chromosome, strand). If a GTF file is provided and no gene mapping file is supplied, the script will extract Ensembl IDs or gene symbols from the GTF as needed, depending on what is missing from the count matrix. For gene annotation however priority is given to the gene_mapping file if exists.
+5. **gene_annotation_file** (**optional**): A GTF file can be provided to extract gene annotation and biotype information (e.g., biotype, chromosome, strand). If a GTF file is provided and no gene mapping file is supplied, the script will extract Ensembl IDs or gene symbols from the GTF as needed, depending on what is missing from the count matrix. For gene annotation however priority is given to the gene_mapping file if exists.
 
 6. **output_directory** (**mandatory**): The output directory in which the resulting scripts files are stored in. The resulting  *bMINTY* files are:
     - cell.csv
