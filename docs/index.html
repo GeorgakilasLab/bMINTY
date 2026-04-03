@@ -348,6 +348,7 @@
 
         <div class="nav-header">Developers</div>
         <a class="nav-link" data-section="api" href="#" onclick="showSection('api')">API & Swagger</a>
+        <a class="nav-link" data-section="ro-crate" href="#" onclick="showSection('ro-crate')">RO-Crate Metadata</a>
     </nav>
 
     <main class="main-content">
@@ -1076,6 +1077,29 @@ docker compose up --build</code></pre>
             </section>
 
             
+             <section class="section" id="ro-crate">
+                <h1>RO-Crate Metadata</h1>
+                <p>When exporting with <code>?ro_crate=true</code>, bMINTY wraps the export in a ZIP file alongside a <code>ro-crate-metadata.json</code> file conforming to the <a href="https://www.researchobject.org/ro-crate/specification/1.2/" target="_blank">RO-Crate 1.2 specification</a>.</p>
+
+                <div class="card">
+                    <h3>What is recorded</h3>
+                    <ul>
+                        <li><strong>Root Dataset:</strong> export name, date, keywords, author, license, and references to all exported files.</li>
+                        <li><strong>Statistics:</strong> row counts for studies, assays, intervals, and signals at the time of export.</li>
+                        <li><strong>Applied Filters:</strong> the full set of query parameters used to filter the export (if any).</li>
+                        <li><strong>File Entities:</strong> one entry per exported file (<code>.sqlite3</code> or <code>.csv</code>) with MIME type and modification date.</li>
+                        <li><strong>Table Schemas:</strong> column names, types, nullability, primary keys, and foreign key relationships — extracted live from the database via SQLite <code>PRAGMA</code> statements.</li>
+                        <li><strong>Provenance:</strong> references to the bMINTY software, Georgakilas Lab, and the associated publication.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Full structure reference</h3>
+                    <p>A detailed breakdown of every entity and field in the generated metadata is available in the reference document:</p>
+                    <p><a href="ro-crate-metadata-structure.md" target="_blank">ro-crate-metadata-structure.md</a></p>
+                </div>
+            </section>
+
              <section class="section" id="api">
                 <h1>Backend API</h1>
                 <p>bMINTY exposes a full REST API. A Swagger UI is available at <code>http://localhost:8000/api/schema/swagger-ui/</code> for interactive documentation.</p>

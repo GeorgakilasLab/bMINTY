@@ -145,16 +145,6 @@ Schema data is extracted live from the SQLite database via `PRAGMA table_info`, 
 
 ---
 
-## Export formats that trigger RO-Crate
-
-| Format | Query Params | Files in ZIP |
-|---|---|---|
-| SQLite (default) | `?ro_crate=true` | `filtered_database.sqlite3` + `ro-crate-metadata.json` |
-| Full ZIP | `?full=true&ro_crate=true` | all table CSVs + `filtered_database.sqlite3` + `ro-crate-metadata.json` |
-| Single CSV | `?table=study&ro_crate=true` | `study.csv` + `ro-crate-metadata.json` |
-
----
-
 ## Table descriptions
 
 | Table | Description |
