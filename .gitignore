@@ -40,13 +40,11 @@ dist/
 .env.local
 .env.*.local
 
-# Database files (local development - never commit)
-bmintyApi/db.sqlite3
-bmintyApi/db.sqlite3-journal
-bmintyApi/db.sqlite3.backup
-bmintyApi/db.sqlite3.bak
-*.sqlite3
-*.sqlite3-journal
+# Only ignore SQLite files inside bmintyApi
+bmintyApi/*.sqlite3
+bmintyApi/*.sqlite3-journal
+bmintyApi/*.sqlite3.backup
+bmintyApi/*.sqlite3.bak
 
 # SSH keys folder
 ssh_keys/
