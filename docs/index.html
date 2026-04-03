@@ -669,6 +669,19 @@ docker compose up --build</code></pre>
                     </div>
                 </div>
 
+                <h3>Checksum Verification</h3>
+                <p>When importing an entire database, you can optionally enter a <strong>SHA-256 checksum</strong> to verify file integrity before committing the import.</p>
+                <div class="grid-2">
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/import_data_checksum_matches.png" alt="Checksum matches">
+                        <div class="img-caption">Checksums match — file integrity verified. The <strong>IMPORT</strong> button becomes available.</div>
+                    </div>
+                    <div class="img-container" onclick="openLightbox(this)">
+                        <img src="screenshot/import_data/import_data_checksum_does_not_match.png" alt="Checksum mismatch">
+                        <div class="img-caption">Checksum mismatch — the file may be corrupted. You can still proceed with <strong>IMPORT ANYWAY</strong>.</div>
+                    </div>
+                </div>
+
                 <h3>Step-by-Step Wizard to import individual data.</h3>
                 <p><em>Scroll horizontally to view all steps:</em></p>
                 
@@ -717,6 +730,11 @@ docker compose up --build</code></pre>
                         <img src="screenshot/import_data/export_selected_data_with_filters.png" style="width:100%; display:block;">
                         <div class="img-caption">Export Configuration Dialog with Filters Applied</div>
                     </div>
+            </div>
+
+            <div class="img-container" onclick="openLightbox(this)" style="max-width:600px; margin: 1.5rem auto;">
+                <img src="screenshot/import_data/export_completed_successfully_and_checksum_displayed.png" alt="Export completed with checksum" style="width:100%; display:block;">
+                <div class="img-caption">Export complete — a <strong>SHA-256 checksum</strong> is displayed and can be copied or downloaded as a <code>.sha256</code> file to verify the exported data later.</div>
             </div>
 
             <div class="card">
