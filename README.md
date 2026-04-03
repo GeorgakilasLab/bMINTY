@@ -100,7 +100,7 @@ A small test database (~25 MB) is included to verify your installation.
 **File:** `test-data/SRP073767_b_cells.sqlite3`  
 **Content:** B cells from study SRP073767
 
-### Verify file integrity in CLI (optional, can be done also via the ui)
+### Verify file integrity in CLI (optional, can be done also via the UI)
 
 ```bash
 # Linux / macOS
