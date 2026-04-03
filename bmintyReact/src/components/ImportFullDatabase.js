@@ -12,24 +12,40 @@ import {
     CircularProgress,
     Stack,
     Checkbox,
-    FormControlLabel
+    FormControlLabel,
+    TextField,
+    InputAdornment,
+    Tooltip
 } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import axios from 'axios';
 import { API_BASE } from '../config';
 
+async function computeSha256(file) {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default function ImportFullDatabase({ onImportSuccess, open = false, onClose }) {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [createBackup, setCreateBackup] = useState(true); // backup option
+    const [createBackup, setCreateBackup] = useState(true);
 
-    // Sync external open prop with internal state
     React.useEffect(() => {
         setDialogOpen(open);
     }, [open]);
+
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [computingChecksum, setComputingChecksum] = useState(false);
+    const [computedChecksum, setComputedChecksum] = useState('');
+    const [expectedChecksum, setExpectedChecksum] = useState('');
     const [snackOpen, setSnackOpen] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
     const [snackSeverity, setSnackSeverity] = useState('success');
@@ -37,6 +53,8 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
     const closeDialog = () => {
         setDialogOpen(false);
         setSelectedFile(null);
+        setComputedChecksum('');
+        setExpectedChecksum('');
         onClose?.();
     };
 
@@ -59,19 +77,40 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
         setSnackOpen(false);
     };
 
-    const handleFileChange = (event) => {
+    const handleFileChange = async (event) => {
         const file = event.target.files[0];
-        if (file) {
-            if (!file.name.toLowerCase().endsWith('.sqlite3')) {
-                setSnackMessage('Please select a .sqlite3 file.');
-                setSnackSeverity('error');
-                setSnackOpen(true);
-                event.target.value = null;
-                return;
-            }
-            setSelectedFile(file);
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.sqlite3')) {
+            setSnackMessage('Please select a .sqlite3 file.');
+            setSnackSeverity('error');
+            setSnackOpen(true);
+            event.target.value = null;
+            return;
+        }
+
+        setSelectedFile(file);
+        setComputedChecksum('');
+        setComputingChecksum(true);
+        try {
+            const hash = await computeSha256(file);
+            setComputedChecksum(hash);
+        } catch {
+            setComputedChecksum('');
+        } finally {
+            setComputingChecksum(false);
         }
     };
+
+    const checksumMatch =
+        expectedChecksum.trim() !== '' &&
+        computedChecksum !== '' &&
+        expectedChecksum.trim().toLowerCase() === computedChecksum.toLowerCase();
+
+    const checksumMismatch =
+        expectedChecksum.trim() !== '' &&
+        computedChecksum !== '' &&
+        expectedChecksum.trim().toLowerCase() !== computedChecksum.toLowerCase();
 
     const handleImport = async () => {
         if (!selectedFile) {
@@ -96,7 +135,7 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
-                    timeout: 600000, // 10 minutes timeout
+                    timeout: 600000,
                 }
             );
 
@@ -149,13 +188,13 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
                             </Typography>
                         </Box>
                     )}
-                    
-                    <Box sx={{ 
-                        p: 2, 
-                        bgcolor: '#fff3e0', 
-                        borderRadius: 1, 
+
+                    <Box sx={{
+                        p: 2,
+                        bgcolor: '#fff3e0',
+                        borderRadius: 1,
                         border: '2px solid #ff6f00',
-                        mb: 3 
+                        mb: 3
                     }}>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                             <WarningAmberIcon color="warning" />
@@ -165,8 +204,8 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
                         </Stack>
                         <Typography variant="body2" color="textSecondary">
                             <strong>All existing data will be deleted and replaced</strong> with the imported database.
-                            {createBackup 
-                                ? ' The current database will be backed up automatically.' 
+                            {createBackup
+                                ? ' The current database will be backed up automatically.'
                                 : ' No backup will be created.'}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" sx={{ mt: 1, fontStyle: 'italic' }}>
@@ -176,8 +215,8 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
 
                     <FormControlLabel
                         control={
-                            <Checkbox 
-                                checked={createBackup} 
+                            <Checkbox
+                                checked={createBackup}
                                 onChange={(e) => setCreateBackup(e.target.checked)}
                                 sx={{ color: '#4caf50', '&.Mui-checked': { color: '#4caf50' } }}
                             />
@@ -199,10 +238,10 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
                         Select a SQLite database file (.sqlite3) to import:
                     </Typography>
 
-                    <Box sx={{ 
-                        p: 3, 
-                        border: '2px dashed #bdbdbd', 
-                        borderRadius: 2, 
+                    <Box sx={{
+                        p: 3,
+                        border: '2px dashed #bdbdbd',
+                        borderRadius: 2,
                         textAlign: 'center',
                         bgcolor: '#fafafa',
                         cursor: 'pointer',
@@ -237,21 +276,106 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
                             <Typography variant="body2" color="textSecondary">
                                 {selectedFile.name} ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
                             </Typography>
+                            {computingChecksum && (
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                                    <CircularProgress size={14} />
+                                    <Typography variant="caption" color="textSecondary">
+                                        Computing checksum…
+                                    </Typography>
+                                </Stack>
+                            )}
+                            {computedChecksum && (
+                                <Box sx={{ mt: 1 }}>
+                                    <Typography variant="caption" color="textSecondary">
+                                        SHA-256:
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            display: 'block',
+                                            fontFamily: 'monospace',
+                                            fontSize: '0.7rem',
+                                            wordBreak: 'break-all',
+                                            color: '#555'
+                                        }}
+                                    >
+                                        {computedChecksum}
+                                    </Typography>
+                                </Box>
+                            )}
                         </Box>
                     )}
+
+                    {/* Checksum verification */}
+                    <Box sx={{ mt: 3 }}>
+                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                Verify Checksum (optional)
+                            </Typography>
+                            <Tooltip
+                                title="Paste the expected SHA-256 checksum here to verify the file hasn't been corrupted or tampered with. You can obtain the checksum from the Export dialog."
+                                arrow
+                            >
+                                <HelpOutlineIcon sx={{ fontSize: 16, color: 'text.secondary', cursor: 'help' }} />
+                            </Tooltip>
+                        </Stack>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Paste expected SHA-256 checksum here…"
+                            value={expectedChecksum}
+                            onChange={(e) => setExpectedChecksum(e.target.value)}
+                            inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.78rem' } }}
+                            InputProps={{
+                                endAdornment: computedChecksum && expectedChecksum.trim() ? (
+                                    <InputAdornment position="end">
+                                        {checksumMatch ? (
+                                            <Tooltip title="Checksums match — file is intact">
+                                                <CheckCircleIcon sx={{ color: '#388e3c' }} />
+                                            </Tooltip>
+                                        ) : (
+                                            <Tooltip title="Checksum mismatch — file may be corrupted or incorrect">
+                                                <CancelIcon sx={{ color: '#d32f2f' }} />
+                                            </Tooltip>
+                                        )}
+                                    </InputAdornment>
+                                ) : null
+                            }}
+                        />
+                        {checksumMatch && (
+                            <Typography variant="caption" sx={{ color: '#388e3c', mt: 0.5, display: 'block' }}>
+                                Checksums match — file integrity verified.
+                            </Typography>
+                        )}
+                        {checksumMismatch && (
+                            <Typography variant="caption" sx={{ color: '#d32f2f', mt: 0.5, display: 'block' }}>
+                                Checksum mismatch! The file may be corrupted or not the expected database.
+                            </Typography>
+                        )}
+                    </Box>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeDialog} disabled={loading}>
                         Cancel
                     </Button>
-                    <Button
-                        onClick={openConfirmDialog}
-                        variant="contained"
-                        disabled={!selectedFile || loading}
-                        sx={{ backgroundColor: '#ff6f00', '&:hover': { backgroundColor: '#ff8f00' } }}
+                    <Tooltip
+                        title={checksumMismatch ? 'Checksum mismatch — verify you have the correct file before importing' : ''}
+                        arrow
                     >
-                        Import
-                    </Button>
+                        <span>
+                            <Button
+                                onClick={openConfirmDialog}
+                                variant="contained"
+                                disabled={!selectedFile || loading || computingChecksum}
+                                sx={{
+                                    backgroundColor: checksumMismatch ? '#d32f2f' : '#ff6f00',
+                                    '&:hover': { backgroundColor: checksumMismatch ? '#b71c1c' : '#ff8f00' }
+                                }}
+                            >
+                                {checksumMismatch ? 'Import Anyway' : 'Import'}
+                            </Button>
+                        </span>
+                    </Tooltip>
                 </DialogActions>
             </Dialog>
 
@@ -289,6 +413,16 @@ export default function ImportFullDatabase({ onImportSuccess, open = false, onCl
                             </Typography>
                         )}
                     </Box>
+                    {checksumMismatch && (
+                        <Box sx={{ mt: 2, p: 1.5, bgcolor: '#ffebee', borderRadius: 1, border: '1px solid #ef9a9a' }}>
+                            <Typography variant="body2" sx={{ color: '#d32f2f', fontWeight: 600 }}>
+                                Warning: Checksum mismatch detected!
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                                The file's checksum does not match the expected value. Proceeding may import an incorrect or corrupted database.
+                            </Typography>
+                        </Box>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeConfirmDialog}>

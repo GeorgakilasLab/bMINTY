@@ -149,6 +149,10 @@ CORS_ALLOWED_ORIGINS = [
     f"http://127.0.0.1:{FRONTEND_PORT}",
 ]
 
+CORS_EXPOSE_HEADERS = [
+    'X-SHA256-Checksum',
+]
+
 CSRF_TRUSTED_ORIGINS = [
     f'http://localhost:{FRONTEND_PORT}',
     f'http://127.0.0.1:{FRONTEND_PORT}',

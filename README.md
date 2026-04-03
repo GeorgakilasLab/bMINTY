@@ -93,6 +93,35 @@ The Docker setup uses [`docker-compose.yml`](docker-compose.yml) to orchestrate 
 
 ---
 
+## Quick Start with Test Data
+
+A small test database (~25 MB) is included to verify your installation.
+
+**File:** `test-data/SRP073767_b_cells.sqlite3`  
+**Content:** B cells from study SRP073767
+
+### Verify file integrity in CLI (optional, can be done also via the ui)
+
+```bash
+# Linux / macOS
+sha256sum -c test-data/SRP073767_b_cells.sha256
+
+```
+
+### Import the test database
+
+1. **Start bMINTY** and open `http://localhost:3000` in your browser.
+2. Scroll to the **footer** of the Explore page and click **Import Data**.
+3. In the wizard, select **Import Entire Database**.
+4. Choose the file `test-data/SRP073767_b_cells.sqlite3` and click **Import**.
+5. Once complete, the study **SRP073767** should appear on the Explore Dashboard.
+
+> **Optional:** Enable *Create a Backup* in the wizard to preserve any existing data before overwriting.
+
+If the study loads successfully, your installation is working correctly!
+
+---
+
 ## Quick Reference
 
 ### Docker Commands

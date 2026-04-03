@@ -14,9 +14,13 @@ import {
     Radio,
     CircularProgress,
     Stack,
-    Tooltip
+    Tooltip,
+    IconButton,
+    Divider
 } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import axios from 'axios';
 import { API_BASE } from '../config';
 
@@ -29,20 +33,59 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
     const [snackOpen, setSnackOpen] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
     const [snackSeverity, setSnackSeverity] = useState('success');
+    const [checksum, setChecksum] = useState('');
+    const [exportedFilename, setExportedFilename] = useState('');
+    const [checksumCopied, setChecksumCopied] = useState(false);
 
     const tables = ['study', 'assay', 'interval', 'assembly', 'signal', 'cell', 'pipeline'];
 
     const openDialog = () => {
         setDialogOpen(true);
+        setChecksum('');
+        setExportedFilename('');
+        setChecksumCopied(false);
     };
 
     const closeDialog = () => {
         setDialogOpen(false);
+        setChecksum('');
+        setExportedFilename('');
+        setChecksumCopied(false);
     };
 
     const handleSnackClose = (event, reason) => {
         if (reason === 'clickaway') return;
         setSnackOpen(false);
+    };
+
+    const handleCopyChecksum = async () => {
+        try {
+            await navigator.clipboard.writeText(checksum);
+            setChecksumCopied(true);
+            setTimeout(() => setChecksumCopied(false), 2000);
+        } catch {
+            // fallback for older browsers
+            const el = document.createElement('textarea');
+            el.value = checksum;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            setChecksumCopied(true);
+            setTimeout(() => setChecksumCopied(false), 2000);
+        }
+    };
+
+    const handleDownloadChecksum = () => {
+        const content = `${checksum}  ${exportedFilename}\n`;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `${exportedFilename}.sha256`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
     };
 
     const handleExport = async (includeRoCrate = false) => {
@@ -55,7 +98,7 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
         try {
             // Build query params from filters
             const params = new URLSearchParams();
-            
+
             // Add all filter parameters
             Object.entries(filters).forEach(([key, value]) => {
                 if (value && value !== '' && value !== 'all' && value !== 'All') {
@@ -79,9 +122,8 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
 
             // Handle full database dump
             if (exportFormat === 'full') {
-                // For full dump, export just the SQLite database file (fast)
                 const url = `${API_BASE}/database/export/sqlite/`;
-                
+
                 const response = await axios.get(url, {
                     responseType: 'blob',
                 });
@@ -96,10 +138,9 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(link.href);
 
-                setSnackMessage('Full database export successful! File downloaded.');
-                setSnackSeverity('success');
-                setSnackOpen(true);
-                closeDialog();
+                const sha256 = response.headers['x-sha256-checksum'] || '';
+                setExportedFilename(filename);
+                setChecksum(sha256);
                 onExportSuccess?.();
                 return;
             }
@@ -122,7 +163,7 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
 
             // Download the file
             const response = await axios.get(url, {
-                responseType: exportFormat === 'zip' ? 'blob' : 'blob',
+                responseType: 'blob',
             });
 
             // Determine filename
@@ -146,11 +187,9 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(link.href);
 
-            const roCrateMsg = includeRoCrate ? ' with RO-Crate metadata' : '';
-            setSnackMessage(`Export${roCrateMsg} successful! File downloaded.`);
-            setSnackSeverity('success');
-            setSnackOpen(true);
-            closeDialog();
+            const sha256 = response.headers['x-sha256-checksum'] || '';
+            setExportedFilename(filename);
+            setChecksum(sha256);
             onExportSuccess?.();
         } catch (error) {
             console.error('Export error:', error);
@@ -184,177 +223,247 @@ export default function ExportSelectionButton({ filters, onExportSuccess }) {
                     Export Selected Data
                 </DialogTitle>
                 <DialogContent dividers sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-                        Choose your export format. Most options respect your current filters. The "Full Database Dump" option exports everything regardless of filters.
-                    </Typography>
-
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                            Export Format
-                        </Typography>
-                        <RadioGroup
-                            value={exportFormat}
-                            onChange={(e) => setExportFormat(e.target.value)}
-                        >
-                            <FormControlLabel
-                                value="sqlite"
-                                control={<Radio />}
-                                label={
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                            SQLite Database
-                                        </Typography>
-                                        <Typography variant="caption" color="textSecondary">
-                                            Single .sqlite3 file with all filtered data
-                                        </Typography>
-                                    </Box>
-                                }
-                            />
-                            <FormControlLabel
-                                value="zip"
-                                control={<Radio />}
-                                label={
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                            ZIP Archive
-                                        </Typography>
-                                        <Typography variant="caption" color="textSecondary">
-                                            Database + individual CSV files for each table
-                                        </Typography>
-                                    </Box>
-                                }
-                            />
-                            <FormControlLabel
-                                value="csv"
-                                control={<Radio />}
-                                label={
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                            Single Table (CSV)
-                                        </Typography>
-                                        <Typography variant="caption" color="textSecondary">
-                                            Export one specific table as CSV
-                                        </Typography>
-                                    </Box>
-                                }
-                            />
-                            <FormControlLabel
-                                value="full"
-                                control={<Radio />}
-                                label={
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                            Full Database Dump (SQLite)
-                                        </Typography>
-                                        <Typography variant="caption" color="textSecondary">
-                                            Complete database file - fast export, ignores all filters
-                                        </Typography>
-                                    </Box>
-                                }
-                            />
-                        </RadioGroup>
-                    </Box>
-
-                    {exportFormat === 'csv' && (
-                        <Box sx={{ mb: 3 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
-                                Select Table
+                    {checksum ? (
+                        /* Post-export checksum view */
+                        <Box>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                                <CheckCircleOutlineIcon sx={{ color: '#388e3c' }} />
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#388e3c' }}>
+                                    Export complete
+                                </Typography>
+                            </Stack>
+                            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                                File downloaded: <strong>{exportedFilename}</strong>
                             </Typography>
-                            <RadioGroup
-                                value={selectedTable}
-                                onChange={(e) => setSelectedTable(e.target.value)}
-                            >
-                                {tables.map((table) => (
-                                    <FormControlLabel
-                                        key={table}
-                                        value={table}
-                                        control={<Radio />}
-                                        label={<Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{table}</Typography>}
-                                    />
-                                ))}
-                            </RadioGroup>
-                        </Box>
-                    )}
 
-                    <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                        <Typography variant="caption" color="textSecondary">
-                            <strong>Applied Filters:</strong>
-                            <br />
-                            {Object.entries(filters)
-                                .filter(([, v]) => {
-                                    // Exclude empty, 'all', 'All' values, and empty arrays
-                                    if (!v || v === '' || v === 'all' || v === 'All') return false;
-                                    if (Array.isArray(v) && v.length === 0) return false;
-                                    return true;
-                                })
-                                .map(([k, v]) => {
-                                    const displayValue = Array.isArray(v) ? v.join(', ') : String(v);
-                                    return (
-                                        <div key={k}>
-                                            • {k}: {displayValue.substring(0, 50)}
-                                        </div>
-                                    );
-                                })
-                                .slice(0, 5) // Show first 5 filters
-                            }
-                            {Object.entries(filters).filter(([, v]) => {
-                                if (!v || v === '' || v === 'all' || v === 'All') return false;
-                                if (Array.isArray(v) && v.length === 0) return false;
-                                return true;
-                            }).length > 5 && (
-                                <div>
-                                    • ... and {Object.entries(filters).filter(([, v]) => {
+                            <Divider sx={{ mb: 2 }} />
+
+                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                SHA-256 Checksum
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
+                                Use this checksum to verify the integrity of the downloaded file.
+                            </Typography>
+                            <Box sx={{
+                                p: 1.5,
+                                bgcolor: '#f5f5f5',
+                                borderRadius: 1,
+                                border: '1px solid #e0e0e0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                mb: 2
+                            }}>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        fontFamily: 'monospace',
+                                        fontSize: '0.75rem',
+                                        wordBreak: 'break-all',
+                                        flex: 1
+                                    }}
+                                >
+                                    {checksum}
+                                </Typography>
+                                <Tooltip title={checksumCopied ? 'Copied!' : 'Copy to clipboard'}>
+                                    <IconButton size="small" onClick={handleCopyChecksum}>
+                                        <ContentCopyIcon fontSize="small" sx={{ color: checksumCopied ? '#388e3c' : 'inherit' }} />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<FileDownloadIcon />}
+                                onClick={handleDownloadChecksum}
+                                sx={{ borderColor: '#388e3c', color: '#388e3c' }}
+                            >
+                                Download .sha256 file
+                            </Button>
+                        </Box>
+                    ) : (
+                        /* Export format selection view */
+                        <>
+                            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                                Choose your export format. Most options respect your current filters. The "Full Database Dump" option exports everything regardless of filters.
+                            </Typography>
+
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
+                                    Export Format
+                                </Typography>
+                                <RadioGroup
+                                    value={exportFormat}
+                                    onChange={(e) => setExportFormat(e.target.value)}
+                                >
+                                    <FormControlLabel
+                                        value="sqlite"
+                                        control={<Radio />}
+                                        label={
+                                            <Box>
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    SQLite Database
+                                                </Typography>
+                                                <Typography variant="caption" color="textSecondary">
+                                                    Single .sqlite3 file with all filtered data
+                                                </Typography>
+                                            </Box>
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        value="zip"
+                                        control={<Radio />}
+                                        label={
+                                            <Box>
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    ZIP Archive
+                                                </Typography>
+                                                <Typography variant="caption" color="textSecondary">
+                                                    Database + individual CSV files for each table
+                                                </Typography>
+                                            </Box>
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        value="csv"
+                                        control={<Radio />}
+                                        label={
+                                            <Box>
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    Single Table (CSV)
+                                                </Typography>
+                                                <Typography variant="caption" color="textSecondary">
+                                                    Export one specific table as CSV
+                                                </Typography>
+                                            </Box>
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        value="full"
+                                        control={<Radio />}
+                                        label={
+                                            <Box>
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    Full Database Dump (SQLite)
+                                                </Typography>
+                                                <Typography variant="caption" color="textSecondary">
+                                                    Complete database file - fast export, ignores all filters
+                                                </Typography>
+                                            </Box>
+                                        }
+                                    />
+                                </RadioGroup>
+                            </Box>
+
+                            {exportFormat === 'csv' && (
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
+                                        Select Table
+                                    </Typography>
+                                    <RadioGroup
+                                        value={selectedTable}
+                                        onChange={(e) => setSelectedTable(e.target.value)}
+                                    >
+                                        {tables.map((table) => (
+                                            <FormControlLabel
+                                                key={table}
+                                                value={table}
+                                                control={<Radio />}
+                                                label={<Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{table}</Typography>}
+                                            />
+                                        ))}
+                                    </RadioGroup>
+                                </Box>
+                            )}
+
+                            <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                                <Typography variant="caption" color="textSecondary">
+                                    <strong>Applied Filters:</strong>
+                                    <br />
+                                    {Object.entries(filters)
+                                        .filter(([, v]) => {
+                                            if (!v || v === '' || v === 'all' || v === 'All') return false;
+                                            if (Array.isArray(v) && v.length === 0) return false;
+                                            return true;
+                                        })
+                                        .map(([k, v]) => {
+                                            const displayValue = Array.isArray(v) ? v.join(', ') : String(v);
+                                            return (
+                                                <div key={k}>
+                                                    • {k}: {displayValue.substring(0, 50)}
+                                                </div>
+                                            );
+                                        })
+                                        .slice(0, 5)
+                                    }
+                                    {Object.entries(filters).filter(([, v]) => {
                                         if (!v || v === '' || v === 'all' || v === 'All') return false;
                                         if (Array.isArray(v) && v.length === 0) return false;
                                         return true;
-                                    }).length - 5} more filter(s)
-                                </div>
-                            )}
-                        </Typography>
-                    </Box>
+                                    }).length > 5 && (
+                                        <div>
+                                            • ... and {Object.entries(filters).filter(([, v]) => {
+                                                if (!v || v === '' || v === 'all' || v === 'All') return false;
+                                                if (Array.isArray(v) && v.length === 0) return false;
+                                                return true;
+                                            }).length - 5} more filter(s)
+                                        </div>
+                                    )}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={closeDialog} disabled={loading || loadingRoCrate}>
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={() => handleExport(false)}
-                        variant="contained"
-                        disabled={loading || loadingRoCrate}
-                        sx={{ backgroundColor: '#388e3c' }}
-                    >
-                        {loading ? (
-                            <Stack direction="row" alignItems="center" gap={1}>
-                                <CircularProgress size={20} color="inherit" />
-                                Exporting...
-                            </Stack>
-                        ) : (
-                            'Export'
-                        )}
-                    </Button>
-                    <Tooltip 
-                        title="Packages your data with standardized research metadata including: file descriptions, table schemas (columns, keys), data counts, and applied filters. This follows the RO-Crate 1.2 specification for F.A.I.R. data."
-                        arrow
-                        placement="top"
-                    >
-                        <span>
+                    {checksum ? (
+                        <Button onClick={closeDialog} variant="contained" sx={{ backgroundColor: '#388e3c' }}>
+                            Done
+                        </Button>
+                    ) : (
+                        <>
+                            <Button onClick={closeDialog} disabled={loading || loadingRoCrate}>
+                                Cancel
+                            </Button>
                             <Button
-                                onClick={() => handleExport(true)}
+                                onClick={() => handleExport(false)}
                                 variant="contained"
-                                disabled={loading || loadingRoCrate || exportFormat === 'full'}
-                                sx={{ backgroundColor: '#1976d2' }}
+                                disabled={loading || loadingRoCrate}
+                                sx={{ backgroundColor: '#388e3c' }}
                             >
-                                {loadingRoCrate ? (
+                                {loading ? (
                                     <Stack direction="row" alignItems="center" gap={1}>
                                         <CircularProgress size={20} color="inherit" />
                                         Exporting...
                                     </Stack>
                                 ) : (
-                                    'Export RO-Crate'
+                                    'Export'
                                 )}
                             </Button>
-                        </span>
-                    </Tooltip>
+                            <Tooltip
+                                title="Packages your data with standardized research metadata including: file descriptions, table schemas (columns, keys), data counts, and applied filters. This follows the RO-Crate 1.2 specification for F.A.I.R. data."
+                                arrow
+                                placement="top"
+                            >
+                                <span>
+                                    <Button
+                                        onClick={() => handleExport(true)}
+                                        variant="contained"
+                                        disabled={loading || loadingRoCrate || exportFormat === 'full'}
+                                        sx={{ backgroundColor: '#1976d2' }}
+                                    >
+                                        {loadingRoCrate ? (
+                                            <Stack direction="row" alignItems="center" gap={1}>
+                                                <CircularProgress size={20} color="inherit" />
+                                                Exporting...
+                                            </Stack>
+                                        ) : (
+                                            'Export RO-Crate'
+                                        )}
+                                    </Button>
+                                </span>
+                            </Tooltip>
+                        </>
+                    )}
                 </DialogActions>
             </Dialog>
 

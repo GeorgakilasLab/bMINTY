@@ -176,6 +176,12 @@
         display: block;
     }
 
+    .img-container.qs-step {
+        max-width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     .img-caption {
         padding: 0.75rem;
         background: #f8fafc;
@@ -330,6 +336,7 @@
         <div class="nav-header">Getting Started</div>
         <a class="nav-link active" data-section="overview" href="#" onclick="showSection('overview')">Overview</a>
         <a class="nav-link" data-section="setup" href="#" onclick="showSection('setup')">Setup & Maintenance</a>
+        <a class="nav-link" data-section="quickstart" href="#" onclick="showSection('quickstart')">Quick Start with Test Data</a>
         
         <div class="nav-header">User Interface</div>
         <a class="nav-link" data-section="explore" href="#" onclick="showSection('explore')">Explore Dashboard</a>
@@ -453,6 +460,69 @@ docker compose up --build</code></pre>
                         <li><strong>Frontend:</strong> <code>bmintyReact/</code> (React UI)</li>
                         <li><strong>Orchestration:</strong> <code>docker-compose.yml</code></li>
                     </ul>
+                </div>
+            </section>
+
+            <section class="section" id="quickstart">
+                <h1>Quick Start with Test Data</h1>
+                <p>To verify that your bMINTY installation is working correctly, you can import the included test database. It contains a small, pre-populated dataset of <strong>B cells</strong> from study <strong>SRP073767</strong> and is around <strong>25 MB</strong> in size.</p>
+
+                <div class="card">
+                    <h3>Test Database</h3>
+                    <ul>
+                        <li><strong>File:</strong> <code>test-data/SRP073767_b_cells.sqlite3</code></li>
+                        <li><strong>Study:</strong> SRP073767</li>
+                        <li><strong>Content:</strong> B cells only</li>
+                        <li><strong>Size:</strong> ~25 MB</li>
+                        <li><strong>Checksum:</strong> <code>test-data/SRP073767_b_cells.sha256</code></li>
+                    </ul>
+                </div>
+
+                <h2>Step 1 — Start bMINTY</h2>
+                <p>Make sure your bMINTY instance is up and running before importing. If it is not, start it with:</p>
+                <pre><code>docker compose up</code></pre>
+                <p>Then open <code>http://localhost:3000</code> in your browser. You should see the Explore Dashboard.</p>
+
+                <div class="img-container qs-step" onclick="openLightbox(this)">
+                    <img src="screenshot/quick_start_guide/step_1_bminty_empty_database.png" alt="bMINTY loaded in browser with empty Explore Dashboard">
+                    <div class="img-caption">bMINTY running with an empty database — ready for import</div>
+                </div>
+
+                <h2>Step 2 — Open the Import Wizard</h2>
+                <p>Scroll to the <strong>footer</strong> of the Explore page. You will find the <strong>Import Data</strong> button there. Click it to open the Import Wizard.</p>
+
+                <div class="img-container qs-step" onclick="openLightbox(this)">
+                    <img src="screenshot/quick_start_guide/step_2_open_import_wizard.png" alt="Footer of the Explore page with the Import Data button highlighted">
+                    <div class="img-caption">Footer of the Explore page — click "Import Data" to open the wizard</div>
+                </div>
+
+                <h2>Step 3 — Select "Import Entire Database"</h2>
+                <p>In the Import Wizard dialog, choose the <strong>Import Entire Database</strong> option. This will replace the current database with the one you provide.</p>
+
+                <div class="img-container qs-step" onclick="openLightbox(this)">
+                    <img src="screenshot/quick_start_guide/step_3_import_entire_db.png" alt='Import Wizard dialog showing the "Import Entire Database" option selected'>
+                    <div class="img-caption">Import Wizard — select "Import Entire Database"</div>
+                </div>
+
+                <h2>Step 4 — Upload the Test Database File</h2>
+                <p>Click <strong>Choose File</strong> and navigate to <code>test-data/SRP073767_b_cells.sqlite3</code> inside your local bMINTY repository clone. Then click <strong>Import</strong> to start the upload.</p>
+
+                <div class="card">
+                    <h3>Tip</h3>
+                    <p>If you want to verify the file integrity, type the <strong>SHA256 checksum</strong> before completing the import. The checksum should match the one provided with the test database.</p>
+                </div>
+
+                <div class="img-container qs-step" onclick="openLightbox(this)">
+                    <img src="screenshot/quick_start_guide/step_4_upload_the_database_file_and_verify.png" alt="File picker showing SRP073767_b_cells.sqlite3 selected and the Import button">
+                    <div class="img-caption">Select the test database file and click Import</div>
+                </div>
+
+                <h2>Step 5 — Verify the Import</h2>
+                <p>After a successful import, the Explore Dashboard will refresh and show the study <strong>SRP073767</strong> with its associated assays and B cell data. If the study appears, your installation is working correctly.</p>
+
+                <div class="img-container qs-step" onclick="openLightbox(this)">
+                    <img src="screenshot/quick_start_guide/step_5_verify_the_import.png" alt="Explore Dashboard after import — SRP073767 study visible in the table">
+                    <div class="img-caption">Explore Dashboard after importing the test database — study SRP073767 should be visible</div>
                 </div>
             </section>
 

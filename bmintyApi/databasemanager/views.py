@@ -8,6 +8,7 @@ import zipfile
 import sqlite3
 import json
 import uuid
+import hashlib
 import threading
 import tempfile
 import time
@@ -71,6 +72,29 @@ def _batch_iter(iterable, batch_size):
     items = list(iterable) if not isinstance(iterable, list) else iterable
     for i in range(0, len(items), batch_size):
         yield items[i:i + batch_size]
+
+def _compute_sha256_file(file_path):
+    """Compute SHA-256 checksum of a file on disk using chunked reading (efficient, ~64KB RAM)."""
+    h = hashlib.sha256()
+    with open(file_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+def _compute_sha256_bytes(data):
+    """Compute SHA-256 checksum of a BytesIO or bytes object. Rewinds BytesIO afterward."""
+    h = hashlib.sha256()
+    if hasattr(data, 'read'):
+        pos = data.tell()
+        data.seek(0)
+        for chunk in iter(lambda: data.read(65536), b''):
+            h.update(chunk)
+        data.seek(pos)
+    else:
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+        h.update(data)
+    return h.hexdigest()
 
 def _get_multi_value_param(query_params, param_name):
     """
@@ -1318,13 +1342,16 @@ def export_sqlite(request):
                     ro_crate = _generate_ro_crate_metadata(request.GET, counts, file_list, 'csv', db_file_path)
                     zf.writestr('ro-crate-metadata.json', json.dumps(ro_crate, indent=2))
                 
+                checksum = _compute_sha256_bytes(mem_file)
                 mem_file.seek(0)
                 response = FileResponse(mem_file, as_attachment=True, filename=f'{table}_ro-crate.zip')
+                response['X-SHA256-Checksum'] = checksum
                 return response
             else:
                 # Plain CSV
                 resp = HttpResponse(csv_data, content_type='text/csv')
                 resp['Content-Disposition'] = f'attachment; filename="{table}.csv"'
+                resp['X-SHA256-Checksum'] = _compute_sha256_bytes(csv_data)
                 return resp
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
@@ -1351,9 +1378,11 @@ def export_sqlite(request):
                     ro_crate = _generate_ro_crate_metadata(request.GET, counts, file_list, 'zip', db_file_path)
                     zf.writestr('ro-crate-metadata.json', json.dumps(ro_crate, indent=2))
             
+            checksum = _compute_sha256_bytes(mem_file)
             mem_file.seek(0)
             filename = 'full_export_ro-crate.zip' if include_ro_crate else 'full_export.zip'
             response = FileResponse(mem_file, as_attachment=True, filename=filename)
+            response['X-SHA256-Checksum'] = checksum
             return response
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
@@ -1372,16 +1401,21 @@ def export_sqlite(request):
                 ro_crate = _generate_ro_crate_metadata(request.GET, counts, file_list, 'sqlite', db_file_path)
                 zf.writestr('ro-crate-metadata.json', json.dumps(ro_crate, indent=2))
             
+            checksum = _compute_sha256_bytes(mem_file)
             mem_file.seek(0)
             response = FileResponse(mem_file, as_attachment=True, filename='exported_database_ro-crate.zip')
+            response['X-SHA256-Checksum'] = checksum
             return response
         else:
             # Plain SQLite
-            return FileResponse(
+            checksum = _compute_sha256_file(db_file_path)
+            response = FileResponse(
                 open(db_file_path, 'rb'),
                 as_attachment=True,
                 filename='exported_database.sqlite3'
             )
+            response['X-SHA256-Checksum'] = checksum
+            return response
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
@@ -2147,9 +2181,9 @@ def _create_filtered_sqlite_db_fast(query_params):
         if interval_conditions:
             interval_filter_sql = ' AND '.join(interval_conditions)
             conn.execute(f'''CREATE TEMP TABLE filtered_interval_ids (id INTEGER PRIMARY KEY)''')
-            conn.execute(f'''INSERT INTO filtered_interval_ids 
-                SELECT id FROM source.interval i 
-                LEFT JOIN source.assembly asm ON i.assembly_id = asm.id 
+            conn.execute(f'''INSERT INTO filtered_interval_ids
+                SELECT i.id FROM source.interval i
+                LEFT JOIN source.assembly asm ON i.assembly_id = asm.id
                 WHERE {interval_filter_sql}''')
             conn.execute('ANALYZE filtered_interval_ids')
             
@@ -2506,13 +2540,6 @@ def export_filtered_sqlite(request):
                     "error": "No studies match the applied filters."
                 }, status=400)
             
-            if counts['assays'] == 0:
-                if temp_db_path and os_module.path.exists(temp_db_path):
-                    os_module.unlink(temp_db_path)
-                return JsonResponse({
-                    "error": "No assays match the applied filters."
-                }, status=400)
-                
         except Exception as e:
             if temp_db_path and os_module.path.exists(temp_db_path):
                 os_module.unlink(temp_db_path)
@@ -2547,6 +2574,7 @@ def export_filtered_sqlite(request):
                         ro_crate = _generate_ro_crate_metadata(query_params, counts, file_list, 'csv', temp_db_path)
                         zf.writestr('ro-crate-metadata.json', json.dumps(ro_crate, indent=2))
                     
+                    checksum = _compute_sha256_bytes(mem_file)
                     mem_file.seek(0)
                     response = FileResponse(
                         mem_file,
@@ -2554,6 +2582,7 @@ def export_filtered_sqlite(request):
                         filename=f'filtered_{table}_ro-crate.zip',
                         content_type='application/zip'
                     )
+                    response['X-SHA256-Checksum'] = checksum
                     # Clean up temp file
                     if temp_db_path and os_module.path.exists(temp_db_path):
                         os_module.unlink(temp_db_path)
@@ -2562,6 +2591,7 @@ def export_filtered_sqlite(request):
                     # Plain CSV export
                     resp = HttpResponse(csv_data, content_type='text/csv')
                     resp['Content-Disposition'] = f'attachment; filename="filtered_{table}.csv"'
+                    resp['X-SHA256-Checksum'] = _compute_sha256_bytes(csv_data)
                     # Clean up temp file
                     if temp_db_path and os_module.path.exists(temp_db_path):
                         os_module.unlink(temp_db_path)
@@ -2595,6 +2625,7 @@ def export_filtered_sqlite(request):
                         ro_crate = _generate_ro_crate_metadata(query_params, counts, file_list, 'zip', temp_db_path)
                         zf.writestr('ro-crate-metadata.json', json.dumps(ro_crate, indent=2))
                 
+                checksum = _compute_sha256_bytes(mem_file)
                 mem_file.seek(0)
                 filename = 'filtered_export_ro-crate.zip' if include_ro_crate else 'filtered_export.zip'
                 response = FileResponse(
@@ -2603,6 +2634,7 @@ def export_filtered_sqlite(request):
                     filename=filename,
                     content_type='application/zip'
                 )
+                response['X-SHA256-Checksum'] = checksum
                 # Clean up temp file
                 if temp_db_path and os_module.path.exists(temp_db_path):
                     os_module.unlink(temp_db_path)
@@ -2611,7 +2643,7 @@ def export_filtered_sqlite(request):
                 if temp_db_path and os_module.path.exists(temp_db_path):
                     os_module.unlink(temp_db_path)
                 return JsonResponse({"error": str(e), "traceback": traceback.format_exc()}, status=500)
-        
+
         # Default: raw SQLite download (STREAMING - minimal RAM usage)
         try:
             if include_ro_crate:
@@ -2626,6 +2658,7 @@ def export_filtered_sqlite(request):
                     ro_crate = _generate_ro_crate_metadata(query_params, counts, file_list, 'sqlite', temp_db_path)
                     zf.writestr('ro-crate-metadata.json', json.dumps(ro_crate, indent=2))
                 
+                checksum = _compute_sha256_bytes(mem_file)
                 mem_file.seek(0)
                 response = FileResponse(
                     mem_file,
@@ -2633,22 +2666,25 @@ def export_filtered_sqlite(request):
                     filename='filtered_database_ro-crate.zip',
                     content_type='application/zip'
                 )
+                response['X-SHA256-Checksum'] = checksum
                 # Clean up temp file
                 if temp_db_path and os_module.path.exists(temp_db_path):
                     os_module.unlink(temp_db_path)
                 return response
             else:
                 # OPTIMIZED: Stream file directly - uses ~8KB RAM instead of GBs!
+                checksum = _compute_sha256_file(temp_db_path)
                 response = FileResponse(
                     open(temp_db_path, 'rb'),
                     as_attachment=True,
                     filename="filtered_database.sqlite3",
                     content_type='application/x-sqlite3'
                 )
+                response['X-SHA256-Checksum'] = checksum
                 # FileResponse will handle file cleanup automatically when request completes
                 # But we need to schedule cleanup ourselves
                 response._temp_file_path = temp_db_path
-                
+
                 # Get file size for Content-Length header
                 response['Content-Length'] = os_module.path.getsize(temp_db_path)
                 
