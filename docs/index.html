@@ -320,16 +320,79 @@
     .section { display: none; }
     .section.active { display: block; animation: fadeIn 0.4s; }
 
+    /* --- MOBILE BUTTON --- */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        margin-right: 1rem;
+        color: var(--text);
+        font-size: 1.4rem;
+        line-height: 1;
+    }
+
+    /* --- SIDEBAR OVERLAY (mobile) --- */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 40;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* --- RESPONSIVE BREAKPOINTS --- */
+    @media (max-width: 768px) {
+        .menu-toggle { display: block; }
+
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+            z-index: 45;
+            width: min(var(--sidebar-width), 85vw);
+        }
+        .sidebar.open { transform: translateX(0); }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem 1rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        h1 { font-size: 1.75rem; }
+        h2 { font-size: 1.35rem; }
+        h3 { font-size: 1.1rem; }
+
+        .img-container.qs-step { max-width: 100%; }
+
+        .wizard-step { flex: 0 0 88%; }
+
+        pre { font-size: 0.8rem; }
+    }
+
+    @media (max-width: 480px) {
+        .main-content { padding: 1rem 0.75rem; }
+        .header { padding: 0 1rem; }
+        h1 { font-size: 1.5rem; }
+    }
+
 </style>
 </head>
 <body>
 
 <div class="header">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation">&#9776;</button>
     <div class="logo">
         <img src="screenshot/bminty_logo.png" alt="bMINTY Logo">
         <div class="logo-text">Documentation</div>
     </div>
 </div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <div class="layout">
     <nav class="sidebar">
@@ -1208,20 +1271,36 @@ docker compose up --build</code></pre>
 </div>
 
 <script>
+    // Mobile sidebar toggle
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
     // Navigation Logic
     function showSection(sectionId) {
         // Hide all sections
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        
+
         // Show target section
         const target = document.getElementById(sectionId);
         if(target) target.classList.add('active');
-        
+
         // Update Sidebar highlighting
         document.querySelectorAll('.nav-link').forEach(l => {
             l.classList.remove('active');
             if (l.dataset.section === sectionId) l.classList.add('active');
         });
+
+        // Close sidebar on mobile after navigation
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
 
         // Scroll top
         window.scrollTo(0,0);
