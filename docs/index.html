@@ -1230,18 +1230,95 @@ docker compose up --build</code></pre>
             
              <section class="section" id="ro-crate">
                 <h1>RO-Crate Metadata</h1>
-                <p>When exporting with <code>?ro_crate=true</code>, bMINTY wraps the export in a ZIP file alongside a <code>ro-crate-metadata.json</code> file conforming to the <a href="https://www.researchobject.org/ro-crate/specification/1.2/" target="_blank">RO-Crate 1.2 specification</a>.</p>
+                <p>When exporting with <code>?ro_crate=true</code>, bMINTY wraps the export in a ZIP file alongside a <code>ro-crate-metadata.json</code> file conforming to the <a href="https://www.researchobject.org/ro-crate/specification/1.2/" target="_blank">RO-Crate 1.2 specification</a>. The metadata captures full provenance, export statistics, applied filters, file descriptions, and live-extracted database schemas — making the export self-describing and suitable for publication or long-term archival.</p>
 
                 <div class="card">
-                    <h3>What is recorded</h3>
-                    <ul>
-                        <li><strong>Root Dataset:</strong> export name, date, keywords, author, license, and references to all exported files.</li>
-                        <li><strong>Statistics:</strong> row counts for studies, assays, intervals, and signals at the time of export.</li>
-                        <li><strong>Applied Filters:</strong> the full set of query parameters used to filter the export (if any).</li>
-                        <li><strong>File Entities:</strong> one entry per exported file (<code>.sqlite3</code> or <code>.csv</code>) with MIME type and modification date.</li>
-                        <li><strong>Table Schemas:</strong> column names, types, nullability, primary keys, and foreign key relationships — extracted live from the database via SQLite <code>PRAGMA</code> statements.</li>
-                        <li><strong>Provenance:</strong> references to the bMINTY software, Georgakilas Lab, and the associated publication.</li>
-                    </ul>
+                    <h3>Provenance &amp; Identity</h3>
+                    <p>The root <code>Dataset</code> entity carries the following provenance fields:</p>
+                    <table class="schema-table">
+                        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>name</code></td><td>Fixed label: <em>bMINTY Database Export</em></td></tr>
+                            <tr><td><code>description</code></td><td>Dynamically generated — includes study count and number of active filters</td></tr>
+                            <tr><td><code>datePublished</code></td><td>ISO 8601 UTC timestamp of the export</td></tr>
+                            <tr><td><code>author</code> / <code>publisher</code></td><td>Georgakilas Lab (<code>Organization</code> entity with GitHub URL)</td></tr>
+                            <tr><td><code>creator</code></td><td>bMINTY software (<code>SoftwareApplication</code> entity with MIT license and citation reference)</td></tr>
+                            <tr><td><code>license</code></td><td>CC0 1.0 Universal</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Export Statistics</h3>
+                    <p>Four <code>PropertyValue</code> entries are always present, summarising the size of the exported dataset:</p>
+                    <table class="schema-table">
+                        <thead><tr><th>Property ID</th><th>Name</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>#stat-studyCount</code></td><td><code>studyCount</code></td><td>Number of studies included in the export</td></tr>
+                            <tr><td><code>#stat-assayCount</code></td><td><code>assayCount</code></td><td>Number of assays included in the export</td></tr>
+                            <tr><td><code>#stat-intervalCount</code></td><td><code>intervalCount</code></td><td>Number of genomic intervals included in the export</td></tr>
+                            <tr><td><code>#stat-signalCount</code></td><td><code>signalCount</code></td><td>Number of signal measurements included in the export</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Applied Filters <span style="font-weight:400;font-size:0.9em;color:var(--text-light)">(conditional)</span></h3>
+                    <p>If the export was produced with active filters, a single <code>PropertyValue</code> entity (<code>#export-filters</code>) is added, serialising all non-empty filter parameters as a JSON string.</p>
+                    <table class="schema-table">
+                        <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>study_name</code></td><td>Study name</td></tr>
+                            <tr><td><code>study_external_id</code></td><td>Study external identifier</td></tr>
+                            <tr><td><code>study_availability</code></td><td>Study availability status</td></tr>
+                            <tr><td><code>assay_name</code></td><td>Assay name</td></tr>
+                            <tr><td><code>assay_external_id</code></td><td>Assay external identifier</td></tr>
+                            <tr><td><code>assay_type</code></td><td>Assay type</td></tr>
+                            <tr><td><code>assay_availability</code></td><td>Assay availability status</td></tr>
+                            <tr><td><code>tissue</code></td><td>Tissue type</td></tr>
+                            <tr><td><code>cell_type</code></td><td>Cell type</td></tr>
+                            <tr><td><code>assay_cell_type</code></td><td>Assay-level cell type</td></tr>
+                            <tr><td><code>treatment</code></td><td>Treatment condition</td></tr>
+                            <tr><td><code>platform</code></td><td>Sequencing platform</td></tr>
+                            <tr><td><code>interval_type</code></td><td>Genomic interval type</td></tr>
+                            <tr><td><code>biotype</code></td><td>Biotype</td></tr>
+                            <tr><td><code>assembly_name</code></td><td>Reference genome assembly name</td></tr>
+                            <tr><td><code>assembly_species</code></td><td>Species of the assembly</td></tr>
+                            <tr><td><code>cell_label</code></td><td>Cell label / annotation</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Exported Files</h3>
+                    <p>Each file in the ZIP is described as a <code>File</code> entity:</p>
+                    <table class="schema-table">
+                        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>name</code></td><td>Filename</td></tr>
+                            <tr><td><code>description</code></td><td>Human-readable description of the file's contents</td></tr>
+                            <tr><td><code>encodingFormat</code></td><td><code>application/x-sqlite3</code> for the database; <code>text/csv</code> for tabular files</td></tr>
+                            <tr><td><code>dateModified</code></td><td>ISO 8601 timestamp of export</td></tr>
+                            <tr><td><code>conformsTo</code> <em>(SQLite only)</em></td><td>References to all seven table schema entities</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Database Table Schemas <span style="font-weight:400;font-size:0.9em;color:var(--text-light)">(SQLite only)</span></h3>
+                    <p>For each of the seven tables, a <code>CreativeWork</code> schema entity is embedded with full column-level detail are extracted live via SQLite <code>PRAGMA</code> statements.</p>
+                    <table class="schema-table">
+                        <thead><tr><th>Table</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>study</code></td><td>Research studies containing experimental data</td></tr>
+                            <tr><td><code>assay</code></td><td>Experimental assays performed within studies</td></tr>
+                            <tr><td><code>interval</code></td><td>Genomic intervals (peaks, genes, regions)</td></tr>
+                            <tr><td><code>assembly</code></td><td>Reference genome assemblies</td></tr>
+                            <tr><td><code>signal</code></td><td>Signal measurements for intervals and cells</td></tr>
+                            <tr><td><code>cell</code></td><td>Cell annotations and metadata</td></tr>
+                            <tr><td><code>pipeline</code></td><td>Analysis pipelines used for data processing</td></tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="card">
