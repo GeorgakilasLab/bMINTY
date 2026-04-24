@@ -528,16 +528,27 @@ docker compose up --build</code></pre>
 
             <section class="section" id="quickstart">
                 <h1>Quick Start with Test Data</h1>
-                <p>To verify that your bMINTY installation is working correctly, you can import the included test database. It contains a small, pre-populated dataset of <strong>B cells</strong> from study <strong>SRP073767</strong> and is around <strong>25 MB</strong> in size.</p>
+                <p>To verify that your bMINTY installation is working correctly, you can import one of the included test databases. Two pre-populated examples are provided inside the <code>test_data/</code> folder.</p>
 
                 <div class="card">
-                    <h3>Test Database</h3>
+                    <h3>Example 1 — B Cells (SRP073767)</h3>
                     <ul>
-                        <li><strong>File:</strong> <code>test-data/SRP073767_b_cells.sqlite3</code></li>
+                        <li><strong>File:</strong> <code>test_data/SRP073767_b_cells/SRP073767_b_cells.sqlite3</code></li>
                         <li><strong>Study:</strong> SRP073767</li>
                         <li><strong>Content:</strong> B cells only</li>
                         <li><strong>Size:</strong> ~25 MB</li>
-                        <li><strong>Checksum:</strong> <code>test-data/SRP073767_b_cells.sha256</code></li>
+                        <li><strong>Checksum:</strong> <code>test_data/SRP073767_b_cells/SRP073767_b_cells.sha256</code></li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Example 2 — PBMC (Zheng et al.)</h3>
+                    <ul>
+                        <li><strong>Archive:</strong> <code>test_data/pbmc/pbmc.zip</code> — extract to obtain <code>pbmc.sqlite3</code> before importing</li>
+                        <li><strong>Content:</strong> Peripheral blood mononuclear cells (PBMC) — multiple cell types</li>
+                        <li><strong>Checksum:</strong> <code>test_data/pbmc/pbmc.sha256</code> (applies to the extracted <code>pbmc.sqlite3</code>)</li>
+                        <li><strong>Count matrix:</strong> <code>test_data/pbmc/pbmc.bead.enriched.sample.zheng.count_matrix.csv.gz</code></li>
+                        <li><strong>Reference notebook:</strong> <code>test_data/pbmc/example_bminty.ipynb</code> — demonstrates loading the database, building an expression matrix, QC, PCA, differential expression, and pathway enrichment analysis.</li>
                     </ul>
                 </div>
 
@@ -568,7 +579,7 @@ docker compose up --build</code></pre>
                 </div>
 
                 <h2>Step 4 — Upload the Test Database File</h2>
-                <p>Click <strong>Choose File</strong> and navigate to <code>test-data/SRP073767_b_cells.sqlite3</code> inside your local bMINTY repository clone. Then click <strong>Import</strong> to start the upload.</p>
+                <p>Click <strong>Choose File</strong> and navigate to <code>test_data/SRP073767_b_cells/SRP073767_b_cells.sqlite3</code> inside your local bMINTY repository clone. For the PBMC example, first extract <code>test_data/pbmc/pbmc.zip</code> and then select the resulting <code>pbmc.sqlite3</code>. Then click <strong>Import</strong> to start the upload.</p>
 
                 <div class="card">
                     <h3>Tip</h3>

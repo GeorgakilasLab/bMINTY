@@ -95,30 +95,58 @@ The Docker setup uses [`docker-compose.yml`](docker-compose.yml) to orchestrate 
 
 ## Quick Start with Test Data
 
-A small test database (~25 MB) is included to verify your installation.
+Two pre-populated test databases are included inside the `test_data/` folder.
 
-**File:** `test-data/SRP073767_b_cells.sqlite3`  
-**Content:** B cells from study SRP073767
+### Example 1 — B Cells (SRP073767)
 
-### Verify file integrity in CLI (optional, can be done also via the UI)
+**File:** `test_data/SRP073767_b_cells/SRP073767_b_cells.sqlite3`  
+**Content:** B cells from study SRP073767 (~25 MB)
+
+#### Verify file integrity in CLI (optional, can be done also via the UI)
 
 ```bash
 # Linux / macOS
-sha256sum -c test-data/SRP073767_b_cells.sha256
-
+sha256sum -c test_data/SRP073767_b_cells/SRP073767_b_cells.sha256
 ```
 
-### Import the test database
+#### Import the test database
 
 1. **Start bMINTY** and open `http://localhost:3000` in your browser.
 2. Scroll to the **footer** of the Explore page and click **Import Data**.
 3. In the wizard, select **Import Entire Database**.
-4. Choose the file `test-data/SRP073767_b_cells.sqlite3` and click **Import**.
+4. Choose the file `test_data/SRP073767_b_cells/SRP073767_b_cells.sqlite3` and click **Import**.
 5. Once complete, the study **SRP073767** should appear on the Explore Dashboard.
 
 > **Optional:** Enable *Create a Backup* in the wizard to preserve any existing data before overwriting.
 
 If the study loads successfully, your installation is working correctly!
+
+### Example 2 — PBMC (Zheng et al.)
+
+**Archive:** `test_data/pbmc/pbmc.zip` — extract to obtain `pbmc.sqlite3` before importing  
+**Content:** Peripheral blood mononuclear cells (PBMC) with multiple cell types  
+**Count matrix:** `test_data/pbmc/pbmc.bead.enriched.sample.zheng.count_matrix.csv.gz`
+
+#### Extract the archive
+
+```bash
+unzip test_data/pbmc/pbmc.zip -d test_data/pbmc/
+```
+
+#### Verify file integrity in CLI (optional, can be done also via the UI)
+
+```bash
+# Linux / macOS — run after extracting
+sha256sum -c test_data/pbmc/pbmc.sha256
+```
+
+#### Import the PBMC test database
+
+Follow the same import steps above, selecting the extracted `test_data/pbmc/pbmc.sqlite3` as the file.
+
+#### Reference notebook
+
+`test_data/pbmc/example_bminty.ipynb` demonstrates a full downstream analysis workflow using the PBMC database: loading data from bMINTY's SQLite export, building a cell × gene expression matrix, running QC filtering, PCA, differential gene expression (Wilcoxon), and pathway enrichment analysis (KEGG, GO, MSigDB Hallmarks, Reactome).
 
 ---
 
